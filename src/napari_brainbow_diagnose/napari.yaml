@@ -11,8 +11,8 @@ contributions:
     - id: napari-brainbow-diagnose.write_single_image
       python_name: napari_brainbow_diagnose._writer:write_single_image
       title: Save image data with Napari Brainbow Diagnose
-    - id: napari-brainbow-diagnose.make_sample_data
-      python_name: napari_brainbow_diagnose._sample_data:make_sample_data
+    - id: napari-brainbow-diagnose.make_rgb_cube_data
+      python_name: napari_brainbow_diagnose._sample_data:make_rgb_cube_data
       title: Load sample data from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.make_qwidget
       python_name: napari_brainbow_diagnose._widget:ExampleQWidget
@@ -35,8 +35,8 @@ contributions:
       layer_types: ['image']
       filename_extensions: ['.npy']
   sample_data:
-    - command: napari-brainbow-diagnose.make_sample_data
-      display_name: Napari Brainbow Diagnose
+    - command: napari-brainbow-diagnose.make_rgb_cube_data
+      display_name: RGB Cube
       key: unique_id.1
   widgets:
     - command: napari-brainbow-diagnose.make_qwidget
