@@ -23,6 +23,9 @@ contributions:
     - id: napari-brainbow-diagnose.make_func_widget
       python_name: napari_brainbow_diagnose._widget:example_function_widget
       title: Make example function widget
+    - id: napari-brainbow-diagnose.contrast_widget
+      python_name: napari_brainbow_diagnose._contrast:contrast_widget
+      title: Make show contrast widget
   readers:
     - command: napari-brainbow-diagnose.get_reader
       accepts_directories: false
@@ -39,6 +42,8 @@ contributions:
       display_name: RGB Cube
       key: unique_id.1
   widgets:
+    - command: napari-brainbow-diagnose.contrast_widget
+      display_name: Show and select contrast range
     - command: napari-brainbow-diagnose.make_qwidget
       display_name: Example QWidget
     - command: napari-brainbow-diagnose.make_magic_widget
