@@ -3,6 +3,7 @@ try:
 except ImportError:
     __version__ = "unknown"
 
+from ._channel_space import channel_space_widget
 from ._contrast import contrast_widget
 from ._reader import napari_get_reader
 from ._sample_data import make_rgb_cube_data
@@ -17,4 +18,5 @@ __all__ = (
     "ExampleQWidget",
     "example_magic_widget",
     "contrast_widget",
+    "channel_space_widget",
 )
