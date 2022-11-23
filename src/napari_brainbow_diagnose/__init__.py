@@ -3,6 +3,7 @@ try:
 except ImportError:
     __version__ = "unknown"
 
+from ._channel_ROI import channel_ROI_widget
 from ._channel_space import channel_space_widget
 from ._contrast import contrast_widget
 from ._reader import napari_get_reader
@@ -19,4 +20,5 @@ __all__ = (
     "example_magic_widget",
     "contrast_widget",
     "channel_space_widget",
+    "channel_ROI_widget",
 )
