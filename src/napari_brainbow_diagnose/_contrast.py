@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 @magic_factory
 def contrast_widget(img_layer: "napari.layers.Image"):
     """
-    User interface to show the contrast and intensity histogram
-    of the img_layer
+    User interface to show the contrast andintensity histogram of
+    the img_layer
     """
     print(f"you have selected {img_layer}")
