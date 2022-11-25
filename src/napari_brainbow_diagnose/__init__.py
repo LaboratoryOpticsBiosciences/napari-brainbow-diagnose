@@ -3,16 +3,16 @@ try:
 except ImportError:
     __version__ = "unknown"
 
-from ._reader import napari_get_reader
-from ._sample_data import make_sample_data
-from ._widget import ExampleQWidget, example_magic_widget
-from ._writer import write_multiple, write_single_image
+from ._channel_ROI import channel_ROI_widget
+from ._channel_space import channel_space_widget
+from ._contrast import contrast_widget
+from ._sample_data import make_rgb_cube_data
+from ._tooltip_pointer import tooltip_pointer_widget
 
 __all__ = (
-    "napari_get_reader",
-    "write_single_image",
-    "write_multiple",
-    "make_sample_data",
-    "ExampleQWidget",
-    "example_magic_widget",
+    "tooltip_pointer_widget",
+    "make_rgb_cube_data",
+    "contrast_widget",
+    "channel_space_widget",
+    "channel_ROI_widget",
 )
