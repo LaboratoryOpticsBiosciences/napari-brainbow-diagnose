@@ -2,27 +2,9 @@ name: napari-brainbow-diagnose
 display_name: Napari Brainbow Diagnose
 contributions:
   commands:
-    - id: napari-brainbow-diagnose.get_reader
-      python_name: napari_brainbow_diagnose._reader:napari_get_reader
-      title: Open data with Napari Brainbow Diagnose
-    - id: napari-brainbow-diagnose.write_multiple
-      python_name: napari_brainbow_diagnose._writer:write_multiple
-      title: Save multi-layer data with Napari Brainbow Diagnose
-    - id: napari-brainbow-diagnose.write_single_image
-      python_name: napari_brainbow_diagnose._writer:write_single_image
-      title: Save image data with Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.make_rgb_cube_data
       python_name: napari_brainbow_diagnose._sample_data:make_rgb_cube_data
       title: Load sample data from Napari Brainbow Diagnose
-    - id: napari-brainbow-diagnose.make_qwidget
-      python_name: napari_brainbow_diagnose._widget:ExampleQWidget
-      title: Make example QWidget
-    - id: napari-brainbow-diagnose.make_magic_widget
-      python_name: napari_brainbow_diagnose._widget:example_magic_widget
-      title: Make example magic widget
-    - id: napari-brainbow-diagnose.make_func_widget
-      python_name: napari_brainbow_diagnose._widget:example_function_widget
-      title: Make example function widget
     - id: napari-brainbow-diagnose.contrast_widget
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
@@ -35,29 +17,11 @@ contributions:
     - id: napari-brainbow-diagnose.tooltip_pointer_widget
       python_name: napari_brainbow_diagnose._tooltip_pointer:tooltip_pointer_widget
       title: Make color space widget
-  readers:
-    - command: napari-brainbow-diagnose.get_reader
-      accepts_directories: false
-      filename_patterns: ['*.npy']
-  writers:
-    - command: napari-brainbow-diagnose.write_multiple
-      layer_types: ['image*','labels*']
-      filename_extensions: []
-    - command: napari-brainbow-diagnose.write_single_image
-      layer_types: ['image']
-      filename_extensions: ['.npy']
   sample_data:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
       key: unique_id.1
   widgets:
-    - command: napari-brainbow-diagnose.make_qwidget
-      display_name: Example QWidget
-    - command: napari-brainbow-diagnose.make_magic_widget
-      display_name: Example Magic Widget
-    - command: napari-brainbow-diagnose.make_func_widget
-      autogenerate: true
-      display_name: Example Function Widget
     - command: napari-brainbow-diagnose.contrast_widget
       display_name: Show and select contrast range
     - command: napari-brainbow-diagnose.channel_space_widget
