@@ -9,17 +9,21 @@
 
 Visualize and Diagnose brainbow dataset in color space.
 
-----------------------------------
+## Pitch
+Brainbow dataset have unique features that need to be addressed by specialized tools. This plugin aims at visualize and diagnose brainbow dataset.
+In particular we want to interact with the distribution of the dataset in the channel space.
 
-This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
+## Dev Installation
 
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/stable/plugins/index.html
--->
+```bash
+conda create -n napari-brainbow-diagnose
+conda activate napari-brainbow-diagnose
+conda install pip
+git clone git@github.com:LaboratoryOpticsBiosciences/napari-brainbow-diagnose.git
+cd napari-brainbow-diagnose
+pip install -e .[testing]
+pre-commit install
+```
 
 ## Installation
 
@@ -65,3 +69,15 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
+
+----------------------------------
+
+This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
+
+<!--
+Don't miss the full getting started guide to set up your new package:
+https://github.com/napari/cookiecutter-napari-plugin#getting-started
+
+and review the napari docs for plugin developers:
+https://napari.org/stable/plugins/index.html
+-->
