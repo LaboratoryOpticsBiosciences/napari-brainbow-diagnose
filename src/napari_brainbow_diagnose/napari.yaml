@@ -32,6 +32,9 @@ contributions:
     - id: napari-brainbow-diagnose.channel_ROI_widget
       python_name: napari_brainbow_diagnose._channel_ROI:channel_ROI_widget
       title: Make color space widget
+    - id: napari-brainbow-diagnose.tooltip_pointer_widget
+      python_name: napari_brainbow_diagnose._tooltip_pointer:tooltip_pointer_widget
+      title: Make color space widget
   readers:
     - command: napari-brainbow-diagnose.get_reader
       accepts_directories: false
@@ -60,4 +63,6 @@ contributions:
     - command: napari-brainbow-diagnose.channel_space_widget
       display_name: Show channel space in a cube
     - command: napari-brainbow-diagnose.channel_ROI_widget
+      display_name: Select ROI in the channel space
+    - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Select ROI in the channel space
