@@ -25,6 +25,8 @@ pip install -e .[testing]
 pre-commit install
 ```
 
+Do not forget to run pytest `pytest .` before you commit to check your code.
+
 ## Installation
 
 You can install `napari-brainbow-diagnose` via [pip]:
