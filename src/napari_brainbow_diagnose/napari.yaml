@@ -9,7 +9,7 @@ contributions:
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
     - id: napari-brainbow-diagnose.channel_space_widget
-      python_name: napari_brainbow_diagnose._color_space:channel_space_widget
+      python_name: napari_brainbow_diagnose._channel_space:channel_space_widget
       title: Make color space widget
     - id: napari-brainbow-diagnose.channel_ROI_widget
       python_name: napari_brainbow_diagnose._channel_ROI:channel_ROI_widget
