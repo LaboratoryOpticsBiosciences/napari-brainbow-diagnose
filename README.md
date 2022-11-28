@@ -16,7 +16,7 @@ In particular we want to interact with the distribution of the dataset in the ch
 ## Dev Installation
 
 ```bash
-conda create -n napari-brainbow-diagnose
+conda create -n napari-brainbow-diagnose python=3.9
 conda activate napari-brainbow-diagnose
 conda install pip
 git clone git@github.com:LaboratoryOpticsBiosciences/napari-brainbow-diagnose.git
