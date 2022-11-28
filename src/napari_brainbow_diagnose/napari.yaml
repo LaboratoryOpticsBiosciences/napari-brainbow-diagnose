@@ -5,6 +5,9 @@ contributions:
     - id: napari-brainbow-diagnose.make_rgb_cube_data
       python_name: napari_brainbow_diagnose._sample_data:make_rgb_cube_data
       title: Load sample data from Napari Brainbow Diagnose
+    - id: napari-brainbow-diagnose.load_chroms_data_sample
+      python_name: napari_brainbow_diagnose._sample_data:load_chroms_data_sample
+      title: Load chroms data sample from Napari Brainbow Diagnose  
     - id: napari-brainbow-diagnose.contrast_widget
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
@@ -21,6 +24,9 @@ contributions:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
       key: unique_id.1
+    - command: napari-brainbow-diagnose.load_chroms_data_sample
+      display_name: Chroms Data Sample
+      key: unique_id.2
   widgets:
     - command: napari-brainbow-diagnose.contrast_widget
       display_name: Show and select contrast range

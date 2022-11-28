@@ -9,6 +9,7 @@ Replace code below according to your needs.
 from __future__ import annotations
 
 import numpy
+from tifffile import imread
 
 
 def make_rgb_cube_data():
@@ -26,4 +27,32 @@ def make_rgb_cube_data():
         (rgb_cube[0], {"colormap": "red", "blending": "additive"}),
         (rgb_cube[1], {"colormap": "green", "blending": "additive"}),
         (rgb_cube[2], {"colormap": "blue", "blending": "additive"}),
+    ]
+
+
+def load_chroms_data_sample():
+    """Load chroms data sample from the exemple_data folder"""
+    sample_path = "./example_data/chroms_data_sample.tif"
+    chroms_data = imread(sample_path)
+    return [
+        (
+            chroms_data[:, 0, :, :],
+            {"colormap": "red", "blending": "additive", "name": "red channel"},
+        ),
+        (
+            chroms_data[:, 1, :, :],
+            {
+                "colormap": "green",
+                "blending": "additive",
+                "name": "green channel",
+            },
+        ),
+        (
+            chroms_data[:, 2, :, :],
+            {
+                "colormap": "blue",
+                "blending": "additive",
+                "name": "blue channel",
+            },
+        ),
     ]
