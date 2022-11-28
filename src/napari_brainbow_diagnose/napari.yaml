@@ -29,4 +29,4 @@ contributions:
     - command: napari-brainbow-diagnose.channel_ROI_widget
       display_name: Select ROI in the channel space
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
-      display_name: Select ROI in the channel space
+      display_name: Display ROI info in tooltip
