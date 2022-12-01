@@ -7,7 +7,7 @@ contributions:
       title: Load sample data from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.load_chroms_data_sample
       python_name: napari_brainbow_diagnose._sample_data:load_chroms_data_sample
-      title: Load chroms data sample from Napari Brainbow Diagnose  
+      title: Load chroms data sample from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.contrast_widget
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
