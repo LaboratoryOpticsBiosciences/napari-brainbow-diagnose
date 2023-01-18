@@ -7,7 +7,7 @@ contributions:
       title: Load sample data from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.load_chroms_data_sample
       python_name: napari_brainbow_diagnose._sample_data:load_chroms_data_sample
-      title: Load chroms data sample from Napari Brainbow Diagnose  
+      title: Load chroms data sample from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.contrast_widget
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
@@ -20,6 +20,9 @@ contributions:
     - id: napari-brainbow-diagnose.tooltip_pointer_widget
       python_name: napari_brainbow_diagnose._tooltip_pointer:tooltip_pointer_widget
       title: Make color space widget
+    - id: napari-brainbow-diagnose.DensityWidget
+      python_name: napari_brainbow_diagnose._channel_density:DensityWidget
+      title: todo title
   sample_data:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
@@ -36,3 +39,5 @@ contributions:
       display_name: Select ROI in the channel space
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Select ROI in the channel space
+    - command: napari-brainbow-diagnose.DensityWidget
+      display_name: to-do
