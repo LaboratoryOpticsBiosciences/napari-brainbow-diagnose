@@ -181,7 +181,7 @@ def create_density_wheel(
     """
     data_points = flatten_data_points(image, channel_index)
 
-    if not channels_ranges:
+    if not channels_ranges:  # TODO CLIP Channel range?
         channels_ranges = get_channels_ranges(data_points)
 
     hsv = rgb2hsv(data_points)
