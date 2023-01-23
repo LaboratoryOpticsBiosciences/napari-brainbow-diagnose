@@ -4,13 +4,19 @@ from typing import TYPE_CHECKING
 
 import matplotlib.cm
 import matplotlib.colors as colors
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import path
 from matplotlib.backends.backend_qt5agg import FigureCanvas
+from matplotlib.figure import Figure
 from matplotlib.widgets import LassoSelector
-from qtpy.QtWidgets import QHBoxLayout, QWidget
+from qtpy.QtWidgets import QVBoxLayout, QWidget
 from skimage.color import hsv2rgb, rgb2hsv
+
+from ._utils_widget import (
+    brainbow_layers_selector,
+    density_figure_parameters,
+    density_resolution_widget,
+)
 
 if TYPE_CHECKING:
     pass
@@ -188,7 +194,7 @@ def create_density_wheel(
     return hs_density_wheel
 
 
-class DensityFigure:
+class DensityFigure(FigureCanvas):
     def __init__(
         self,
         image: np.ndarray,
@@ -206,35 +212,73 @@ class DensityFigure:
         ----------
         image : np.ndarray
             The input image to create the density wheel and color wheel
-        size : int
-            The size of the density wheel and color wheel.
+        density_resolution : int
+            The resolution of the density wheel and thus color wheel.
         channels_ranges : np.ndarray, optional
             The range of values for each channel, defaults to None.
         channel_index : int, optional
             The index of the channel, defaults to 1.
+        log_scale : bool, optional
+            Whether to use a log scale for the density wheel, defaults to True.
+        cmap : str, optional
+            The colormap to use for the density wheel, defaults to "gray".
         """
+        self.fig = Figure(figsize=(size, size))
+        super().__init__(self.fig)
         self.image = image
-        self.size = size
+        self.density_resolution = size
+        self.channels_ranges = channels_ranges
+        self.channel_index = channel_index
         self.log_scale = log_scale
+        self.cmap = cmap
+
+        self.update_brainbow_image(self.image)
+
+    def update_density_parameters(
+        self, density_resolution, density_log_scale, cmap
+    ):
+        """Updates the density parameters of the density wheel figure."""
+        self.density_resolution = density_resolution
+        self.log_scale = density_log_scale
+        self.cmap = cmap
+        self.fig.canvas.draw_idle()
+
+    def update_brainbow_image(self, brainbow_image: np.ndarray):
+        """Updates the brainbow image of the density wheel figure."""
         self.init_selection_mask()
+        self.image = brainbow_image
         self.density_wheel = create_density_wheel(
-            image, self.size, channels_ranges, channel_index
+            self.image,
+            self.density_resolution,
+            self.channels_ranges,
+            self.channel_index,
         )
-        self.color_wheel = hue_saturation_color_wheel(self.size)
 
-        # create Qt widget with density and color wheel
-        self.create_density_figure(log_scale, cmap)
-
-        # Pixel coordinates
-        pix = np.arange(self.size)
+        # Pixel coordinates for the density wheel
+        pix = np.arange(self.density_resolution)
         xv, yv = np.meshgrid(pix, pix)
         self.pix = np.vstack((xv.flatten(), yv.flatten())).T
-        # placeholder to draw lasso selection
 
-        # add interactivity to select pixel in both subplot
-        # i don't understand why it doesn't when defined here
-        LassoSelector(self.mpl_widget.figure.axes[0], self.onselect, button=1)
-        LassoSelector(self.mpl_widget.figure.axes[0], self.onselect, button=1)
+        # Create the color wheel figure
+        self.color_wheel = hue_saturation_color_wheel(self.density_resolution)
+
+        self.populate_density_figure()
+
+    def update_cmap(self, cmap: str):
+        """Updates the colormap of the density wheel figure."""
+        self.cmap = cmap
+        self.populate_density_figure()
+
+    def update_log_scale(self, log_scale: bool):
+        """Updates the log scale of the density wheel figure."""
+        self.log_scale = log_scale
+
+        norm = None
+        if self.log_scale:
+            norm = colors.LogNorm()
+
+        self.msk_density_wheel.set_norm(norm)
+        self.fig.canvas.draw_idle()
 
     @property
     def density_wheel(self) -> np.ndarray:
@@ -242,10 +286,12 @@ class DensityFigure:
 
     @density_wheel.setter
     def density_wheel(self, val: np.ndarray):
+        """Sets the density wheel of the density wheel figure."""
         self._density_wheel = val
 
     @property
     def selection_mask(self) -> np.ndarray:
+        """Returns the selection mask of the density wheel."""
         if not hasattr(self, "_selection_mask"):
             self.init_selection_mask()
         return self._selection_mask
@@ -255,24 +301,26 @@ class DensityFigure:
         self._selection_mask = val
 
     def init_selection_mask(self):
-        self.selection_mask = np.zeros((self.size, self.size))
+        """Initializes the selection mask of the density wheel.
+        with all zeros."""
+        self.selection_mask = np.zeros(
+            (self.density_resolution, self.density_resolution)
+        )
         return self.selection_mask
 
-    def create_density_figure(
-        self, log_scale: bool = True, cmap: str = "gray"
-    ):
-        self.fig = plt.figure()
-        self.mpl_widget = FigureCanvas(self.fig)  # Qt widget to give to napari
-
-        self.fig.set_facecolor("#262930")  # match napari background color
+    def populate_density_figure(self):
+        """Populates the density figure with the density and color wheel."""
+        self.figure.set_facecolor("#262930")  # match napari background color
 
         norm = None
-        if log_scale:
+        if self.log_scale:
             norm = colors.LogNorm()
 
-        mycmap = copy.copy(matplotlib.cm.get_cmap(cmap))
+        # copy colormap and set bad values to black
+        mycmap = copy.copy(matplotlib.cm.get_cmap(self.cmap))
         mycmap.set_bad(mycmap(0))
 
+        # create colormap for selection mask
         mask_cmap = colors.LinearSegmentedColormap.from_list(
             "colormap", [[0, 0, 0, 0], [0, 0, 0]]
         )
@@ -281,33 +329,31 @@ class DensityFigure:
         )
 
         # density plot
-        self.density_ax = self.fig.add_subplot(121)
-        self.density_ax.set_facecolor(
-            "#262930"
-        )  # match napari background color
-        self.density_ax.set_title("hue/saturation density", color="white")
-        self.msk_density_wheel = self.density_ax.imshow(
+        density_ax = self.figure.add_subplot(121)
+        density_ax.set_facecolor("#262930")  # match napari background color
+        density_ax.set_title("hue/saturation density", color="white")
+        self.msk_density_wheel = density_ax.imshow(
             self.density_wheel,
             origin="lower",
-            # vmax=1,
             interpolation="nearest",
             norm=norm,
             cmap=mycmap,
         )
-        self.density_ax.set_xlim([0, self.size - 1])
-        self.density_ax.set_ylim([0, self.size - 1])
-        self.density_ax.set_aspect("equal")
-        self.density_ax.set_axis_off()
+        density_ax.set_xlim([0, self.density_resolution - 1])
+        density_ax.set_ylim([0, self.density_resolution - 1])
+        density_ax.set_aspect("equal")
+        density_ax.set_axis_off()
+
         # color wheel plot
-        self.color_wheel_ax = self.fig.add_subplot(122)
-        self.color_wheel_ax.set_facecolor(
+        color_wheel_ax = self.figure.add_subplot(122)
+        color_wheel_ax.set_facecolor(
             "#262930"
         )  # match napari background color
-        self.color_wheel_ax.set_title("hue/saturation wheel", color="white")
-        self.msk_color_wheel = self.color_wheel_ax.imshow(
+        color_wheel_ax.set_title("hue/saturation wheel", color="white")
+        self.msk_color_wheel = color_wheel_ax.imshow(
             self.color_wheel, origin="lower", vmax=1, interpolation="nearest"
         )
-        self.msk_selection_mask = self.color_wheel_ax.imshow(
+        self.msk_selection_mask = color_wheel_ax.imshow(
             self.selection_mask,
             origin="lower",
             vmax=1,
@@ -315,19 +361,43 @@ class DensityFigure:
             alpha=0.5,
             cmap=mask_cmap,
         )
-        self.color_wheel_ax.set_xlim([0, self.size - 1])
-        self.color_wheel_ax.set_ylim([0, self.size - 1])
-        self.color_wheel_ax.set_axis_off()
+        color_wheel_ax.set_xlim([0, self.density_resolution - 1])
+        color_wheel_ax.set_ylim([0, self.density_resolution - 1])
+        color_wheel_ax.set_axis_off()
 
-        return self.mpl_widget
+        # lasso selectors
+        self.lasso_density = LassoSelector(density_ax, self.onselect, button=1)
+        self.lasso_color_wheel = LassoSelector(
+            color_wheel_ax, self.onselect, button=1
+        )
+
+        self.fig.canvas.draw_idle()
+
+    def update_density_figure_parameters(
+        self, density_resolution: int, density_log_scale: bool, cmap: str
+    ):
+        """Updates the density figure parameters."""
+        self.density_resolution = density_resolution
+        self.log_scale = density_log_scale
+        self.cmap = cmap
+
+        self.color_wheel = hue_saturation_color_wheel(self.density_resolution)
+
+        self.update_brainbow_image(self.image)
+
+        self.populate_density_figure()
+        self.fig.canvas.draw_idle()
 
     def update_selection_mask(self, array, indices):
+        """Updates the selection mask with the indices of
+        the selected pixels."""
         lin = np.arange(array.size)
         newArray = array.flatten()
         newArray[lin[indices]] = 1
         return newArray.reshape(array.shape)
 
     def onselect(self, verts):
+        """Callback function for the lasso selector."""
         if len(verts) == 2:
             self.init_selection_mask()
         else:
@@ -338,7 +408,6 @@ class DensityFigure:
             )
 
         self.msk_selection_mask.set_data(self.selection_mask)
-        # self.msk_selection_mask.set_data(self.selection_mask)
         self.fig.canvas.draw_idle()
 
 
@@ -347,18 +416,71 @@ class DensityWidget(QWidget):
         super().__init__()
         self.viewer = napari_viewer
 
-        # widget for density figure
-        image = self.viewer.layers[0].data
-        density_figure = DensityFigure(image, 100, log_scale=True, cmap="gray")
-
-        LassoSelector(
-            density_figure.density_ax, density_figure.onselect, button=1
-        )
-        LassoSelector(
-            density_figure.color_wheel_ax, density_figure.onselect, button=1
+        img = (
+            self.empty_brainbow_image()
+        )  # should be (C, Z, Y, X) or (C, Y, X)
+        self.density_figure = DensityFigure(
+            img, 100, log_scale=True, cmap="gray", channel_index=0
         )
 
-        # napari_viewer.window.add_dock_widget(density_figure.mpl_widget)
-        print("hello")
-        self.setLayout(QHBoxLayout())
-        self.layout().addWidget(density_figure.mpl_widget)
+        self.brainbow_layers_selector = brainbow_layers_selector()
+        self.density_resolution_widget = density_resolution_widget()
+        self.density_figure_parameters = density_figure_parameters()
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.brainbow_layers_selector.native)
+        self.layout().addWidget(self.density_resolution_widget.native)
+        self.layout().addWidget(self.density_figure)
+        self.layout().addWidget(self.density_figure_parameters.native)
+
+        self.density_resolution_widget.call_button.clicked.connect(
+            self.update_brainbow_image
+        )
+        self.density_figure_parameters.cmap.changed.connect(
+            self.update_cmap_density
+        )
+        self.density_figure_parameters.density_log_scale.changed.connect(
+            self.update_log_density
+        )
+
+    def update_brainbow_image(self):
+        density_resolution = (
+            self.density_resolution_widget.density_resolution.value
+        )
+        density_log_scale = (
+            self.density_figure_parameters.density_log_scale.value
+        )
+        cmap = self.density_figure_parameters.cmap.value
+        self.density_figure.update_density_figure_parameters(
+            density_resolution, density_log_scale, cmap
+        )
+        self.density_figure.update_brainbow_image(
+            self.get_brainbow_image_from_layers()
+        )
+
+    def update_cmap_density(self):
+        cmap = self.density_figure_parameters.cmap.value
+        self.density_figure.update_cmap(cmap)
+
+    def update_log_density(self):
+        log_scale = self.density_figure_parameters.density_log_scale.value
+        self.density_figure.update_log_scale(log_scale)
+
+    def empty_brainbow_image(self):
+        """Returns an empty brainbow image. With shape (3, 1, 1, 1)
+        corresponding to (C, Z, Y, X)"""
+        return np.random.random((3, 1, 1, 1))
+
+    def get_brainbow_image_from_layers(self):
+        red_layer = self.brainbow_layers_selector.red_layer
+        green_layer = self.brainbow_layers_selector.green_layer
+        blue_layer = self.brainbow_layers_selector.blue_layer
+        if red_layer is None or green_layer is None or blue_layer is None:
+            return self.empty_brainbow_image()
+        else:
+            return np.array(
+                [
+                    red_layer.value.data,
+                    green_layer.value.data,
+                    blue_layer.value.data,
+                ]
+            )
