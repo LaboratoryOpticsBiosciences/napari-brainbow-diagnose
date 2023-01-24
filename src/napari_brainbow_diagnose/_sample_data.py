@@ -23,7 +23,7 @@ BRIAN = pooch.create(
     version=__version__,
     # If this is a development version,
     # get the data from the "add_examples" branch
-    version_dev="add_examples",
+    # version_dev="add_examples",
     registry={
         "chroms_cortex_sample.tif": "sha256:"
         "eb6dd1e670f214ffaa1beb0a57552fb269b07c456e06fda3af3ec5fe69d8e531",
