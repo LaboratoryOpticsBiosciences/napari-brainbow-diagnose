@@ -12,7 +12,7 @@ contributions:
       python_name: napari_brainbow_diagnose._contrast:contrast_widget
       title: Make show contrast widget
     - id: napari-brainbow-diagnose.channel_space_widget
-      python_name: napari_brainbow_diagnose._channel_space:channel_space_widget
+      python_name: napari_brainbow_diagnose._color_space:channel_space_widget
       title: Make color space widget
     - id: napari-brainbow-diagnose.channel_ROI_widget
       python_name: napari_brainbow_diagnose._channel_ROI:channel_ROI_widget
@@ -20,9 +20,6 @@ contributions:
     - id: napari-brainbow-diagnose.tooltip_pointer_widget
       python_name: napari_brainbow_diagnose._tooltip_pointer:tooltip_pointer_widget
       title: Make color space widget
-    - id: napari-brainbow-diagnose.DensityWidget
-      python_name: napari_brainbow_diagnose._channel_density:DensityWidget
-      title: todo title
   sample_data:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
@@ -39,5 +36,3 @@ contributions:
       display_name: Select ROI in the channel space
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Select ROI in the channel space
-    - command: napari-brainbow-diagnose.DensityWidget
-      display_name: to-do
