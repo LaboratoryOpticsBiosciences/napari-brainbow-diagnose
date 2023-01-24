@@ -25,8 +25,8 @@ BRIAN = pooch.create(
     # get the data from the "add_examples" branch
     version_dev="add_examples",
     registry={
-        "chroms_data_sample.tif": "sha256:"
-        "eda6d9e0acb13e726e721141b34d53741510e64e2dc153ced71cbcd81c9e0bc9",
+        "chroms_cortex_sample.tif": "sha256:"
+        "eb6dd1e670f214ffaa1beb0a57552fb269b07c456e06fda3af3ec5fe69d8e531",
     },
 )
 
