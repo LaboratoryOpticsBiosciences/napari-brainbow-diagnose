@@ -53,13 +53,13 @@ def fetch_chroms_data():
     """
     Load the chroms data sample as a tifffile
     """
-    fname = BRIAN.fetch("chroms_data_sample.tif")
+    fname = BRIAN.fetch("chroms_cortex_sample.tif")
     data = imread(fname)
     return data
 
 
-def load_chroms_data_sample():
-    """Load chroms data sample from the exemple_data folder"""
+def load_chroms_cortex_sample():
+    """Load chroms chroms sample from the data folder"""
     chroms_data = fetch_chroms_data()
     return [
         (
