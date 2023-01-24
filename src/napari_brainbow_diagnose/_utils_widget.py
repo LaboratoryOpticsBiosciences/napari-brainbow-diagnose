@@ -21,6 +21,13 @@ def density_figure_parameters(
 
 
 @magic_factory(
+    call_button="Create mask from selected highlighted zones",
+)
+def create_selection_mask():
+    ...
+
+
+@magic_factory(
     auto_call=True,
     call_button="Compute brainbow image density",
     density_resolution={

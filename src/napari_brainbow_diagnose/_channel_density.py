@@ -14,6 +14,7 @@ from skimage.color import hsv2rgb, rgb2hsv
 
 from ._utils_widget import (
     brainbow_layers_selector,
+    create_selection_mask,
     density_figure_parameters,
     density_resolution_widget,
 )
@@ -42,6 +43,14 @@ def flatten_data_points(a: np.ndarray, channel_index: int) -> np.ndarray:
     channel_first = np.moveaxis(a, channel_index, 0)
     flat_data_points = channel_first.reshape(channel_first.shape[0], -1).T
     return flat_data_points
+
+
+def hue_saturation_to_wheel_position(h, s, size):
+    """ """
+    rx = s * np.cos(h * 2 * np.pi)
+    ry = s * np.sin(h * 2 * np.pi)
+    pos = (size / 2) * np.array([1 + rx, 1 + ry]) - 1
+    return pos.astype(int)
 
 
 def get_channels_ranges(a: np.ndarray) -> np.ndarray:
@@ -310,7 +319,7 @@ class DensityFigure(FigureCanvas):
 
     def populate_density_figure(self):
         """Populates the density figure with the density and color wheel."""
-        self.figure.set_facecolor("#262930")  # match napari background color
+        self.fig.set_facecolor("#262930")  # match napari background color
 
         norm = None
         if self.log_scale:
@@ -329,12 +338,11 @@ class DensityFigure(FigureCanvas):
         )
 
         # density plot
-        density_ax = self.figure.add_subplot(121)
+        density_ax = self.fig.add_subplot(121)
         density_ax.set_facecolor("#262930")  # match napari background color
         density_ax.set_title("hue/saturation density", color="white")
         self.msk_density_wheel = density_ax.imshow(
             self.density_wheel,
-            origin="lower",
             interpolation="nearest",
             norm=norm,
             cmap=mycmap,
@@ -345,19 +353,18 @@ class DensityFigure(FigureCanvas):
         density_ax.set_axis_off()
 
         # color wheel plot
-        color_wheel_ax = self.figure.add_subplot(122)
+        color_wheel_ax = self.fig.add_subplot(122)
         color_wheel_ax.set_facecolor(
             "#262930"
         )  # match napari background color
         color_wheel_ax.set_title("hue/saturation wheel", color="white")
         self.msk_color_wheel = color_wheel_ax.imshow(
-            self.color_wheel, origin="lower", vmax=1, interpolation="nearest"
+            self.color_wheel,
         )
+
         self.msk_selection_mask = color_wheel_ax.imshow(
             self.selection_mask,
-            origin="lower",
             vmax=1,
-            interpolation="nearest",
             alpha=0.5,
             cmap=mask_cmap,
         )
@@ -426,11 +433,13 @@ class DensityWidget(QWidget):
         self.brainbow_layers_selector = brainbow_layers_selector()
         self.density_resolution_widget = density_resolution_widget()
         self.density_figure_parameters = density_figure_parameters()
+        self.selection_mask_creator = create_selection_mask()
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(self.brainbow_layers_selector.native)
         self.layout().addWidget(self.density_resolution_widget.native)
         self.layout().addWidget(self.density_figure)
         self.layout().addWidget(self.density_figure_parameters.native)
+        self.layout().addWidget(self.selection_mask_creator.native)
 
         self.density_resolution_widget.call_button.clicked.connect(
             self.update_brainbow_image
@@ -441,6 +450,32 @@ class DensityWidget(QWidget):
         self.density_figure_parameters.density_log_scale.changed.connect(
             self.update_log_density
         )
+        self.density_figure_parameters.density_log_scale.changed.connect(
+            self.update_log_density
+        )
+        self.selection_mask_creator.call_button.clicked.connect(
+            self.update_selection_mask
+        )
+
+    def update_selection_mask(self):
+        img = self.get_brainbow_image_from_layers()
+        # img = np.moveaxis(img, 0, -1) # set channel last
+        hsv = rgb2hsv(img, channel_axis=0)
+        hs = hsv[:-1]
+        resolution = self.density_resolution_widget.density_resolution.value
+        wheel_pos = hue_saturation_to_wheel_position(hs[0], hs[1], resolution)
+        points = flatten_data_points(wheel_pos, 0)
+
+        # must be inversed because of the way the color wheel is plotted
+        mask_corrected = self.density_figure.selection_mask[::-1, ::-1]
+
+        points_selected = mask_corrected[(points[:, 0], points[:, 1])]
+
+        selection_mask = points_selected.reshape(img.shape[1:])
+
+        selection_mask = selection_mask.astype(bool)
+
+        self.viewer.add_labels(selection_mask, name="selection_mask")
 
     def update_brainbow_image(self):
         density_resolution = (
