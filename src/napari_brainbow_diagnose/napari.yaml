@@ -25,7 +25,7 @@ contributions:
       display_name: RGB Cube
       key: unique_id.1
     - command: napari-brainbow-diagnose.load_chroms_data_sample
-      display_name: Chroms Data Sample
+      display_name: Chroms Cortex Sample
       key: unique_id.2
   widgets:
     - command: napari-brainbow-diagnose.contrast_widget

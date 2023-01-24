@@ -58,8 +58,8 @@ def fetch_chroms_data():
     return data
 
 
-def load_chroms_cortex_sample():
-    """Load chroms chroms sample from the data folder"""
+def load_chroms_data_sample():
+    """Load chroms data sample from the data folder"""
     chroms_data = fetch_chroms_data()
     return [
         (
