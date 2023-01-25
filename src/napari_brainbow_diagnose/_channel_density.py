@@ -431,6 +431,19 @@ class DensityWidget(QWidget):
         )
 
         self.brainbow_layers_selector = brainbow_layers_selector()
+
+        # keep layer connected with viewer
+        layers_events = self.viewer.window._qt_viewer.viewer.layers.events
+        layers_events.inserted.connect(
+            self.brainbow_layers_selector.reset_choices
+        )
+        layers_events.removed.connect(
+            self.brainbow_layers_selector.reset_choices
+        )
+        layers_events.reordered.connect(
+            self.brainbow_layers_selector.reset_choices
+        )
+
         self.density_resolution_widget = density_resolution_widget()
         self.density_figure_parameters = density_figure_parameters()
         self.selection_mask_creator = create_selection_mask()
