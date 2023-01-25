@@ -20,7 +20,7 @@ BRIAN = pooch.create(
     # The remote data is on Github
     base_url="https://github.com/LaboratoryOpticsBiosciences/"
     "napari-brainbow-diagnose/raw/{version}/data/",
-    version=__version__,
+    version=f"v{__version__}",
     # If this is a development version,
     # get the data from the "add_examples" branch
     version_dev="main",
