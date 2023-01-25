@@ -3,6 +3,7 @@ try:
 except ImportError:
     __version__ = "unknown"
 
+from ._channel_density import DensityWidget
 from ._channel_ROI import channel_ROI_widget
 from ._channel_space import channel_space_widget
 from ._contrast import contrast_widget
@@ -16,4 +17,5 @@ __all__ = (
     "contrast_widget",
     "channel_space_widget",
     "channel_ROI_widget",
+    "DensityWidget",
 )
