@@ -22,7 +22,7 @@ contributions:
       title: Make color space widget
     - id: napari-brainbow-diagnose.DensityWidget
       python_name: napari_brainbow_diagnose._channel_density:DensityWidget
-      title: todo title
+      title: Make color space widget
   sample_data:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
@@ -40,4 +40,4 @@ contributions:
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Select ROI in the channel space
     - command: napari-brainbow-diagnose.DensityWidget
-      display_name: to-do
+      display_name: Create channel density and select ratio mask
