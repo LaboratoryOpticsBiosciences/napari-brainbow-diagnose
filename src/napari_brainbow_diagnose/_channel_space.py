@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 @magic_factory
 def channel_space_widget(img_layer: "napari.layers.Image"):
     """
-    User interface to show a cube with each pixel projected according to
-    its intensity in each channel.
+    User interface to select a region of interest in the channel space.
     """
     print(f"you have selected {img_layer}")
