@@ -12,6 +12,7 @@ from matplotlib.widgets import LassoSelector
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 from skimage.color import hsv2rgb, rgb2hsv
 
+from ._utils_io import get_brainbow_image_from_layers
 from ._utils_widget import (
     brainbow_layers_selector,
     create_selection_mask,
@@ -513,22 +514,9 @@ class DensityWidget(QWidget):
         log_scale = self.density_figure_parameters.density_log_scale.value
         self.density_figure.update_log_scale(log_scale)
 
-    def empty_brainbow_image(self):
-        """Returns an empty brainbow image. With shape (3, 1, 1, 1)
-        corresponding to (C, Z, Y, X)"""
-        return np.random.random((3, 1, 1, 1))
-
     def get_brainbow_image_from_layers(self):
-        red_layer = self.brainbow_layers_selector.red_layer
-        green_layer = self.brainbow_layers_selector.green_layer
-        blue_layer = self.brainbow_layers_selector.blue_layer
-        if red_layer is None or green_layer is None or blue_layer is None:
-            return self.empty_brainbow_image()
-        else:
-            return np.array(
-                [
-                    red_layer.value.data,
-                    green_layer.value.data,
-                    blue_layer.value.data,
-                ]
-            )
+        get_brainbow_image_from_layers(
+            self.brainbow_layers_selector.red_layer,
+            self.brainbow_layers_selector.green_layer,
+            self.brainbow_layers_selector.blue_layer,
+        )
