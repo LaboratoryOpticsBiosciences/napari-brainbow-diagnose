@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from magicgui import magic_factory
-from napari.layers import Image
+from napari.layers import Image, Labels
 from napari.utils.colormaps import matplotlib_colormaps
 
 if TYPE_CHECKING:
@@ -21,9 +21,17 @@ def density_figure_parameters(
 
 
 @magic_factory(
-    call_button="Create mask from selected highlighted zones",
+    call_button="Get wheel mask applied to image",
 )
-def create_selection_mask():
+def wheel_mask_to_image_mask():
+    ...
+
+
+@magic_factory(
+    call_button="Get image mask applied to wheel",
+    selection_mask={"label": "Select selection layer"},
+)
+def image_mask_to_wheel(selection_mask: Labels):
     ...
 
 
@@ -54,3 +62,16 @@ def brainbow_layers_selector(
 ):
     """Select the layers to be used for the brainbow image."""
     ...
+
+
+def layers_event_callback_connector(
+    layers_events,
+    layer_dropdown,
+):
+    """Connects a callback function to a layer dropdown widget.
+    The callback function is called when the list of layers changes.
+    """
+    layers_events.inserted.connect(layer_dropdown.reset_choices)
+    layers_events.removed.connect(layer_dropdown.reset_choices)
+    layers_events.reordered.connect(layer_dropdown.reset_choices)
+    return
