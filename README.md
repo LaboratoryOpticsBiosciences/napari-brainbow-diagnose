@@ -11,7 +11,7 @@ Explore image in channel coordinate space.
 Brainbow dataset have unique features that need to be addressed by specialized tools. This plugin aims at visualize and diagnose brainbow dataset.
 In particular we want to interact with the distribution of the dataset in the channel space.
 
-![demo_gif](docs/demo_napari-brainbow-diagnose.gif)
+![demo_gif](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/demo_napari-brainbow-diagnose.gif)
 
 ## Usage
 
@@ -36,17 +36,17 @@ For example here on this screenshot we can see that:
 
 - there is a high number of non saturated red-only ratio. (2)
 - there is not a high number of non saturated magenta ratio. (3)
-![ratio](docs/ratio_view.png)
+
+https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/ratio_view.gif
 
 ### Create a selection of ratio on the channel coordinate system and apply it on the original image
 
 
-![ratio](docs/wheel_to_image_selection.gif)
+![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/wheel_to_image_selection.gif)
 
 ### Create a selection of pixel in the image and show where they are in the channel coordinate system
 
-![ratio](docs/image_to_wheel_selection.gif)
-
+![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/image_to_wheel_selection.gif)
 ## Installation
 
 You can install `napari-brainbow-diagnose` via [pip]:
