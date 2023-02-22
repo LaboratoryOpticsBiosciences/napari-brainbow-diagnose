@@ -111,7 +111,7 @@ class DiagnoseWidget(QWidget):
         self.brainbow_image = empty_brainbow_image()
 
     def update_density_wheel(self):
-        density_resolution = (
+        density_figure_resolution = (
             self.density_resolution_widget.density_resolution.value
         )
         density_log_scale = (
@@ -119,7 +119,7 @@ class DiagnoseWidget(QWidget):
         )
         cmap = self.density_figure_parameters.cmap.value
         self.density_figure.update_density_figure_parameters(
-            density_resolution, density_log_scale, cmap
+            density_figure_resolution, density_log_scale, cmap
         )
         self.density_figure.image = get_brainbow_image_from_layers(
             self.brainbow_layers_selector.red_layer.value,
