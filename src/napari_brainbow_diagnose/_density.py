@@ -250,14 +250,14 @@ class DensityFigure(FigureCanvas):
         self.fig.canvas.draw_idle()
 
     def update_density_figure_parameters(
-        self, density_resolution: int, density_log_scale: bool, cmap: str
+        self, figure_size: int, density_log_scale: bool, cmap: str
     ):
         """Updates the density figure parameters."""
-        self.density_resolution = density_resolution
+        self.figure_size = figure_size
         self.log_scale = density_log_scale
         self.cmap = cmap
 
-        self.color_wheel = hue_saturation_color_wheel(self.density_resolution)
+        self.color_wheel = hue_saturation_color_wheel(self.figure_size)
 
         self.update_density()
         self.update_lasso_pixel()
@@ -269,6 +269,7 @@ class DensityFigure(FigureCanvas):
         pix = np.arange(self.figure_size)
         xv, yv = np.meshgrid(pix, pix)
         self.pix = np.vstack((xv.flatten(), yv.flatten())).T
+        self.init_selection_mask()
 
     def update_selection_mask(self, array, indices):
         """Updates the selection mask with the indices of
