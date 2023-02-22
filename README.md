@@ -37,7 +37,7 @@ For example here on this screenshot we can see that:
 - there is a high number of non saturated red-only ratio. (2)
 - there is not a high number of non saturated magenta ratio. (3)
 
-https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/ratio_view.gif
+![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/ratio_view.png)
 
 ### Create a selection of ratio on the channel coordinate system and apply it on the original image
 
