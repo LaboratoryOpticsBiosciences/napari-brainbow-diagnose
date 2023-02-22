@@ -1,10 +1,10 @@
 import numpy as np
 
 
-def empty_brainbow_image(self):
+def empty_brainbow_image():
     """Returns an empty brainbow image. With shape (3, 1, 1, 1)
     corresponding to (C, Z, Y, X)"""
-    return np.random.random((3, 1, 1, 1))
+    return np.random.random((3, 2, 2, 2))
 
 
 def get_brainbow_image_from_layers(

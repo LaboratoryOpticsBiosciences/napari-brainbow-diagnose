@@ -1,11 +1,11 @@
 # Object to create a widget for the plugin to be displayed in napari
 # with all the necessary buttons and sliders of the different subwidgets.
 
-import numpy as np
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from ._density import DensityFigure
 from ._utils_channel_space import image_mask_of_wheel_selection
+from ._utils_io import empty_brainbow_image, get_brainbow_image_from_layers
 from ._utils_widget import (
     brainbow_layers_selector,
     density_figure_parameters,
@@ -83,7 +83,11 @@ class DiagnoseWidget(QWidget):
         )
 
     def create_mask_on_image(self):
-        channels = self.get_brainbow_image_from_layers()
+        channels = get_brainbow_image_from_layers(
+            self.brainbow_layers_selector.red_layer.value,
+            self.brainbow_layers_selector.green_layer.value,
+            self.brainbow_layers_selector.blue_layer.value,
+        )
 
         # must be inversed because of the way the color wheel is plotted
         mask_corrected = self.density_figure.selection_mask[::-1, ::-1].astype(
@@ -96,16 +100,15 @@ class DiagnoseWidget(QWidget):
 
     def create_mask_on_wheel(self):
         mask = self.image_mask_to_wheel.selection_mask.value.data
-        image = self.get_brainbow_image_from_layers()
+        image = get_brainbow_image_from_layers(
+            self.brainbow_layers_selector.red_layer.value,
+            self.brainbow_layers_selector.green_layer.value,
+            self.brainbow_layers_selector.blue_layer.value,
+        )
         self.density_figure.update_mask_on_wheel(image, mask)
 
     def empty_data(self):
-        self.brainbow_image = self.empty_brainbow_image()
-
-    def empty_brainbow_image(self):
-        """Returns an empty brainbow image. With shape (3, 1, 1, 1)
-        corresponding to (C, Z, Y, X)"""
-        return np.random.random((3, 2, 2, 2))
+        self.brainbow_image = empty_brainbow_image()
 
     def update_density_wheel(self):
         density_resolution = (
@@ -118,22 +121,11 @@ class DiagnoseWidget(QWidget):
         self.density_figure.update_density_figure_parameters(
             density_resolution, density_log_scale, cmap
         )
-        self.density_figure.image = self.get_brainbow_image_from_layers()
-
-    def get_brainbow_image_from_layers(self):
-        red_layer = self.brainbow_layers_selector.red_layer
-        green_layer = self.brainbow_layers_selector.green_layer
-        blue_layer = self.brainbow_layers_selector.blue_layer
-        if red_layer is None or green_layer is None or blue_layer is None:
-            return self.empty_brainbow_image()
-        else:
-            return np.array(
-                [
-                    red_layer.value.data,
-                    green_layer.value.data,
-                    blue_layer.value.data,
-                ]
-            )
+        self.density_figure.image = get_brainbow_image_from_layers(
+            self.brainbow_layers_selector.red_layer.value,
+            self.brainbow_layers_selector.green_layer.value,
+            self.brainbow_layers_selector.blue_layer.value,
+        )
 
     def update_log_density(self):
         log_scale = self.density_figure_parameters.density_log_scale.value
