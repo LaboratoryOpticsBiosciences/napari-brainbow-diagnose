@@ -107,7 +107,7 @@ def image_selection_to_wheel_selection(image, selection, wheel_diameter):
     """
 
     # mask image by selection
-    masked_image = image[:, selection].T
+    masked_image = image[:, selection == True].T
 
     # get hue and saturation
     hs = rgb_to_hsv(masked_image, channel_axis=1)[..., :2]
