@@ -10,7 +10,7 @@ contributions:
       title: Load chroms data sample from Napari Brainbow Diagnose
     - id: napari-brainbow-diagnose.tooltip_pointer_widget
       python_name: napari_brainbow_diagnose._tooltip_pointer:tooltip_pointer_widget
-      title: Make color space widget
+      title: Brainbow Tooltip
     - id: napari-brainbow-diagnose.DiagnoseWidget
       python_name: napari_brainbow_diagnose._widget:DiagnoseWidget
       title: Diagnose Brainbow Image
@@ -22,7 +22,7 @@ contributions:
       display_name: Chroms Cortex Sample
       key: unique_id.2
   widgets:
-    - command: napari-brainbow-diagnose.tooltip_pointer_widget
-      display_name: Select ROI in the channel space
     - command: napari-brainbow-diagnose.DiagnoseWidget
       display_name: Diagnose Brainbow Image
+    - command: napari-brainbow-diagnose.tooltip_pointer_widget
+      display_name: Brainbow Tooltip
