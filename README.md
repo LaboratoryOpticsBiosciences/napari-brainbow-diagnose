@@ -7,25 +7,45 @@
 [![codecov](https://codecov.io/gh/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/branch/main/graph/badge.svg)](https://codecov.io/gh/LaboratoryOpticsBiosciences/napari-brainbow-diagnose)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-brainbow-diagnose)](https://napari-hub.org/plugins/napari-brainbow-diagnose)
 
-Visualize and Diagnose brainbow dataset in color space.
-
-## Pitch
+Explore image in channel coordinate space.
 Brainbow dataset have unique features that need to be addressed by specialized tools. This plugin aims at visualize and diagnose brainbow dataset.
 In particular we want to interact with the distribution of the dataset in the channel space.
 
-## Dev Installation
+![demo_gif](docs/demo_napari-brainbow-diagnose.gif)
 
-```bash
-conda create -n napari-brainbow-diagnose python=3.9
-conda activate napari-brainbow-diagnose
-conda install pip
-git clone git@github.com:LaboratoryOpticsBiosciences/napari-brainbow-diagnose.git
-cd napari-brainbow-diagnose
-pip install -e .[testing]
-pre-commit install
-```
+## Usage
 
-Do not forget to run pytest `pytest .` before you commit to check your code.
+You can also look at the [demo notebook](docs/demo.ipynb)
+Find all menus under `Plugins > napari-brainbow-diagnose > Diagnose Brainbow Image`
+
+### Choose your dataset
+
+If you want to use your dataset, you have to format it such as each channel is in one distinct `napari.Layers`
+You can open test dataset to try this plugin in `File > Open Sample > napari-brainbow-diagnose`.
+
+- The RGB Cube is an array with shape (3x256x256x256) cube : Great to check how the plugin work when all color are represented
+- Chrom Cortex Sample is an array with shape (3x256x256x256) #Hugo : Real life brainbow image (Cortex E18 Emx1Cre) !
+
+Once you have your layers you can use the dropdown and select the corresponding layer. It is advised to match the `red, green, blue` order so the ratio you see on the napari viewer corresponds to the Hue-Saturation Wheel of the plugin.
+
+### Get Channel Ratio Density of the image
+
+When you click on `Compute brainbow image density` you will populate the Hue-Saturation density Wheel.
+This should allow you to quickly see which ratio is more present in your image. You can see the corresponding ratio according to the "HS Color wheel" on the right.
+For example here on this screenshot we can see that:
+
+- there is a high number of non saturated red-only ratio. (2)
+- there is not a high number of non saturated magenta ratio. (3)
+![ratio](docs/ratio_view.png)
+
+### Create a selection of ratio on the channel coordinate system and apply it on the original image
+
+
+![ratio](docs/wheel_to_image_selection.gif)
+
+### Create a selection of pixel in the image and show where they are in the channel coordinate system
+
+![ratio](docs/image_to_wheel_selection.gif)
 
 ## Installation
 
