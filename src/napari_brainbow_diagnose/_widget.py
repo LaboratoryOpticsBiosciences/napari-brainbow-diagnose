@@ -66,7 +66,7 @@ class DiagnoseWidget(QWidget):
         )
 
         self.density_resolution_widget.call_button.clicked.connect(
-            self.update_brainbow_image
+            self.update_density_wheel
         )
         self.wheel_mask_to_image_mask.call_button.clicked.connect(
             self.create_mask_on_image
@@ -107,7 +107,7 @@ class DiagnoseWidget(QWidget):
         corresponding to (C, Z, Y, X)"""
         return np.random.random((3, 2, 2, 2))
 
-    def update_brainbow_image(self):
+    def update_density_wheel(self):
         density_resolution = (
             self.density_resolution_widget.density_resolution.value
         )

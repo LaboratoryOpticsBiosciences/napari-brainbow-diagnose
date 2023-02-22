@@ -298,4 +298,5 @@ class DensityFigure(FigureCanvas):
         )
         mask = mask > 0
         self.msk_selection_mask.set_data(mask)
+        self.selection_mask = mask
         self.fig.canvas.draw_idle()

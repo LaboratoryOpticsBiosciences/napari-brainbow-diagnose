@@ -107,7 +107,7 @@ def tooltip_pointer_widget(
     """
 
     mean, median = get_selection_metrics(
-        red_layer, green_layer, blue_layer, selection_layer.data
+        red_layer, green_layer, blue_layer, selection_layer
     )
 
     mean_r, mean_g, mean_b = mean
