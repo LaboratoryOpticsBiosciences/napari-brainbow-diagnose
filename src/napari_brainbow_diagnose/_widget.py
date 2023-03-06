@@ -114,12 +114,13 @@ class DiagnoseWidget(QWidget):
         density_figure_resolution = (
             self.density_resolution_widget.density_resolution.value
         )
+        value_threshold = self.density_resolution_widget.value_threshold.value
         density_log_scale = (
             self.density_figure_parameters.density_log_scale.value
         )
         cmap = self.density_figure_parameters.cmap.value
         self.density_figure.update_density_figure_parameters(
-            density_figure_resolution, density_log_scale, cmap
+            density_figure_resolution, density_log_scale, cmap, value_threshold
         )
         self.density_figure.image = get_brainbow_image_from_layers(
             self.brainbow_layers_selector.red_layer.value,

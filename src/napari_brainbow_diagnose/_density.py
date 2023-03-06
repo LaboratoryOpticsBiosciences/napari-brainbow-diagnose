@@ -109,6 +109,7 @@ class DensityFigure(FigureCanvas):
         channel_axis: int = 1,
         log_scale: bool = True,
         cmap: str = "gray",
+        value_threshold: float = 0.0,
     ):
         self.fig = Figure(figsize=(figure_size, figure_size))
         super().__init__(self.fig)
@@ -118,6 +119,7 @@ class DensityFigure(FigureCanvas):
         self.channel_axis = channel_axis
         self.log_scale = log_scale
         self.cmap = cmap
+        self.value_threshold = value_threshold
 
         self.create_color_wheel()
         self.image = image
@@ -162,6 +164,7 @@ class DensityFigure(FigureCanvas):
             self.image, self.channel_axis
         )
         hsv = rgb_to_hsv(vector_points, channel_axis=1)
+        hsv = hsv[hsv[..., 2] > self.value_threshold]
         hs_points = hsv[:, 0:2]
         self.density_wheel = channels_vector_to_density_wheel(
             hs_points, [360, 100], self.figure_size
@@ -250,12 +253,17 @@ class DensityFigure(FigureCanvas):
         self.fig.canvas.draw_idle()
 
     def update_density_figure_parameters(
-        self, figure_size: int, density_log_scale: bool, cmap: str
+        self,
+        figure_size: int,
+        density_log_scale: bool,
+        cmap: str,
+        value_threshold: float,
     ):
         """Updates the density figure parameters."""
         self.figure_size = figure_size
         self.log_scale = density_log_scale
         self.cmap = cmap
+        self.value_threshold = value_threshold
 
         self.color_wheel = hue_saturation_color_wheel(self.figure_size)
 

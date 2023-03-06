@@ -39,11 +39,18 @@ def image_mask_to_wheel(selection_mask: Labels):
     auto_call=True,
     call_button="Compute brainbow image density",
     density_resolution={
-        "label": "Resolution for hue and saturation wheel figure"
+        "label": "Resolution for hue and saturation wheel figure",
+    },
+    value_threshold={
+        "label": "Minimum voxel Value in HSV space for density calculation",
+        "widget_type": "FloatSlider",
+        "min": 0,
+        "max": 1,
     },
 )
 def density_resolution_widget(
     density_resolution: int = 100,
+    value_threshold: float = 0,
 ):
     """Parameters for density histogram figure."""
     ...
