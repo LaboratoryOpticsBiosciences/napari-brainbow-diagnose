@@ -1,4 +1,6 @@
 import math
+import ternary
+from ternary.helpers import simplex_iterator
 
 import numpy as np
 import skimage.color as skc
@@ -157,5 +159,36 @@ def hue_saturation_color_wheel(size: int = 100) -> np.ndarray:
             if s <= 1:
                 rgb = skc.hsv2rgb([h, s, 1]) * 255
                 wheel[size - 1 - x, size - 1 - y] = rgb
-
     return wheel
+
+def maxwell_hue_space(size: int = 100):
+    """
+    Returns a dictionary representing a barycentric color triangle
+
+    Parameters
+    ----------
+    size : int, optional
+        The size of the color triangle, defaults to 100.
+
+    Returns
+    -------
+    python dictionary
+        The color triangle of rgb values in the maxwell's hue space.
+    """
+
+    def color_point(x, y, z, scale = size):
+        r = x / float(scale)
+        g = y / float(scale)
+        b = z / float(scale)
+        return (r, g, b, 1.)
+
+    d = dict()
+    for (i, j, k) in simplex_iterator(size):
+        d[(i, j, k)] = color_point(i, j, k, size)
+    return d
+
+def maxwell_hue_empty(size: int = 100):
+    d = dict()
+    for (i, j, k) in simplex_iterator(size):
+        d[(i, j, k)] = 0
+    return d

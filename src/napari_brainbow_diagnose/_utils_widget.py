@@ -11,10 +11,12 @@ if TYPE_CHECKING:
 @magic_factory(
     auto_call=True,
     cmap={"choices": matplotlib_colormaps.keys()},
+    color_space={"choices": ["HSV", "Barycentric"]},
 )
 def density_figure_parameters(
     density_log_scale: bool = True,
     cmap: str = "gray",
+    color_space: str = "HSV",
 ):
     """Parameters for the density figure."""
     ...

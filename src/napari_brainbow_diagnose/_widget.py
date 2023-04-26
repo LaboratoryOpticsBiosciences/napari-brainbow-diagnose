@@ -75,6 +75,9 @@ class DiagnoseWidget(QWidget):
             self.create_mask_on_wheel
         )
 
+        self.density_figure_parameters.color_space.changed.connect(
+            self.update_color_space
+        )
         self.density_figure_parameters.cmap.changed.connect(
             self.update_cmap_density
         )
@@ -135,3 +138,7 @@ class DiagnoseWidget(QWidget):
     def update_cmap_density(self):
         cmap = self.density_figure_parameters.cmap.value
         self.density_figure.update_cmap(cmap)
+
+    def update_color_space(self):
+        color_space = self.density_figure_parameters.color_space.value
+        self.density_figure.update_color_space(color_space)
