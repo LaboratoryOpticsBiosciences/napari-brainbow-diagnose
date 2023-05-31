@@ -3,6 +3,7 @@ import ternary
 from ternary.helpers import simplex_iterator
 
 import numpy as np
+from numpy import tan, sqrt, pi, sin, cos
 import skimage.color as skc
 
 from ._utils_shape import get_2D_wheel_coordinate, image_to_flat_data_points
@@ -173,7 +174,7 @@ def maxwell_hue_space(size: int = 100):
     Returns
     -------
     python dictionary
-        The color triangle of rgb values in the maxwell's hue space.
+        The color triangle of rgb values in maxwell's hue space.
     """
 
     def color_point(x, y, z, scale = size):
@@ -190,5 +191,31 @@ def maxwell_hue_space(size: int = 100):
 def maxwell_hue_empty(size: int = 100):
     d = dict()
     for (i, j, k) in simplex_iterator(size):
-        d[(i, j, k)] = 0
+        d[(i, j, k)] = 2
     return d
+
+def spherical_coordinates_color_wheel(size: int = 100):
+    """
+    Returns a numpy array representing a color wheel of polar and
+    azimuth angle values.
+
+    Parameters
+    ----------
+    size : int, optional
+        The size of the color wheel, defaults to 100.
+
+    Returns
+    -------
+    np.ndarray
+        The color wheel of polar and azimuth angle values.
+    """
+
+    wheel = np.zeros((size,size,3)).astype("float")
+    for i in range(size):
+        for j in range(size):
+            theta, phi = pi/2*float(i)/float(size), pi/2*float(j)/float(size)
+            r = max(0, min(1, sin(theta) * cos(phi)))
+            g = max(0, min(1, sin(theta) * sin(phi)))
+            b = max(0, min(1, cos(theta)))
+            wheel[-i-1,j] = np.array([r, g, b])
+    return wheel

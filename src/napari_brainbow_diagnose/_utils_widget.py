@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 @magic_factory(
     auto_call=True,
     cmap={"choices": matplotlib_colormaps.keys()},
-    color_space={"choices": ["HSV", "Barycentric"]},
+    color_space={"choices": ["HSV", "Barycentric", "Spherical"]},
 )
 def density_figure_parameters(
     density_log_scale: bool = True,

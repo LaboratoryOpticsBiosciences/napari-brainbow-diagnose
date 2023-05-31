@@ -6,6 +6,7 @@ import matplotlib.colors as colors
 import numpy as np
 import ternary
 from ternary.helpers import simplex_iterator
+# from ternary.colormapping import colorbar_hack
 from matplotlib import path
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
@@ -22,6 +23,7 @@ from ._utils_channel_space import (
     maxwell_hue_empty,
     image_selection_to_wheel_selection,
     rgb_to_hsv,
+    spherical_coordinates_color_wheel
 )
 
 if TYPE_CHECKING:
@@ -126,15 +128,55 @@ def channels_vector_to_density_triangle(
     # create empty triangle figure
     density_triangle = maxwell_hue_empty(size=size)
 
-    # populate triangle by summing the density of each bin
-    # at the corresponding coordinates
-    channel_vector = (channel_vector - np.min(channel_vector, axis=0, keepdims=True))/np.max(channel_vector, axis=0, keepdims=True)
-    for (r, g, b) in channel_vector:
-        i, j, k = int(round(size*r)), int(round(size*g)), int(round(size*b))
-        if (i, j, k) in density_triangle:
-            density_triangle[(i, j, k)] += 1
+    # RGB to Barycentric 
+    # standardize eaach channel to [0,1]
+    channel_vector = (channel_vector - np.min(channel_vector, axis=0, keepdims=True))
+    channel_vector = channel_vector/np.max(channel_vector, axis=0, keepdims=True)
 
+    # divide each (r,g,b) by (r+g+b) so that r+g+b = 1
+    channel_vector = (size*channel_vector/np.sum(channel_vector, axis=1, keepdims=True)).astype(int)
+    # correct rounding errors (changing last coordinate s.t. r+g+b = size)
+    channel_vector[:,2] = size-np.sum(channel_vector[:,:2], axis=1)
+
+    # populate triangular density by summing the density of each bin
+    # at the corresponding barycentric coordinates
+    for (r, g, b) in channel_vector:
+        density_triangle[(r, g, b)] += 1
     return density_triangle
+
+def channels_vector_to_density_spherical(
+    channel_vector: np.ndarray, bins: np.ndarray
+):
+    """Create a density array of given size (size = bins x bins).
+
+    Parameters
+    ----------
+    channel_vector : np.ndarray
+        The channel vector to create the density array from.
+        Must be of shape (N, channel).
+    bins : np.ndarray
+        The number of bins to use for the histogram.
+
+    Returns
+    -------
+    np.ndarray
+        The ?? of the given ??.
+    """
+
+    # create empty wheel figure
+    density_arr = np.zeros((bins+1, bins+1))
+
+    # RGB to Barycentric 
+    # standardize eaach channel to [0,1]
+    channel_vector = (channel_vector - np.min(channel_vector, axis=0, keepdims=True))
+    channel_vector = channel_vector/np.max(channel_vector, axis=0, keepdims=True)
+
+    # populate wheel by summing the density of each bin
+    # at the corresponding coordinates
+    for (r, g, b) in channel_vector:
+        theta, phi = round(2*bins*(np.arctan(b/r))/np.pi), round(2*bins*(np.arctan(g/np.sqrt(r**2+b**2)))/np.pi)
+        density_arr[theta, phi] += 1
+    return density_arr
 
 
 class DensityFigure(FigureCanvas):
@@ -163,6 +205,8 @@ class DensityFigure(FigureCanvas):
 
         self.create_color_wheel(self.color_space)
         self.image = image
+        self.density_barycentric = None
+        self.density_spherical = None
 
     @property
     def image(self):
@@ -204,7 +248,6 @@ class DensityFigure(FigureCanvas):
             self.image, self.channel_axis
         )
         if self.color_space == "HSV":
-            print("update_density to HSV")
             hsv = rgb_to_hsv(vector_points, channel_axis=1)
             hsv = hsv[hsv[..., 2] > self.value_threshold]
             hs_points = hsv[:, 0:2]
@@ -212,14 +255,18 @@ class DensityFigure(FigureCanvas):
                 hs_points, [360, 100], self.figure_size
             )
         elif self.color_space == "Barycentric":
-            print("update_density to barycentric")
-            self.density_wheel = channels_vector_to_density_triangle(vector_points, self.figure_size)
+            self.density_wheel = channels_vector_to_density_triangle(vector_points, self.figure_size) if self.density_barycentric is None else self.density_barycentric
+
+        elif self.color_space == "Spherical":
+            self.density_wheel = channels_vector_to_density_spherical(vector_points, self.figure_size) if self.density_spherical is None else self.density_spherical
 
     def create_color_wheel(self, color_space):
         if color_space == "HSV":
             self.color_wheel = hue_saturation_color_wheel(self.figure_size)
         elif color_space == "Barycentric":
             self.color_wheel = maxwell_hue_space(self.figure_size)
+        elif color_space == "Spherical":
+            self.color_wheel = spherical_coordinates_color_wheel(self.figure_size)
 
     def update_figure(self):
         """Populates the density figure with the density and color wheel."""
@@ -309,19 +356,35 @@ class DensityFigure(FigureCanvas):
             density_ax = self.fig.add_subplot(121)
             density_ax.set_facecolor("#262930")  # match napari background color
             density_ax.set_title("barycentric density", color="white")
-            figure, tax = ternary.figure(ax = density_ax, scale=self.figure_size)
-            self.msk_density_wheel = tax.heatmap(self.density_wheel, style="hexagonal", use_rgba=False, colorbar=False, cmap=mycmap)
-            # density_ax.set_xlim([0, self.figure_size - 1])
-            # density_ax.set_ylim([0, self.figure_size - 1])
-            # density_ax.set_aspect("equal")
+            _, tax = ternary.figure(ax = density_ax, scale=self.figure_size)
+            if self.log_scale:
+                tax.heatmap(
+                    self.density_wheel,
+                    style="hexagonal",
+                    use_rgba=False, 
+                    colorbar=False,
+                    cmap=mycmap,
+                )
+            else:
+                tax.heatmap(
+                    self.density_wheel_log_norm,
+                    style="hexagonal",
+                    use_rgba=False, 
+                    colorbar=False,
+                    cmap=mycmap,
+                )
+            # colorbar_hack(density_ax, min(self.density_wheel.values()), max(self.density_wheel.values()), cmap=mycmap, norm=norm)
+            density_ax.set_xlim([0, self.figure_size - 1])
+            density_ax.set_ylim([0, self.figure_size - 1])
+            density_ax.set_aspect("equal")
             density_ax.set_axis_off()
 
             # color wheel plot
             color_triangle_ax = self.fig.add_subplot(122)
-            figure, tax = ternary.figure(ax = color_triangle_ax, scale=self.figure_size)
+            _, tax = ternary.figure(ax = color_triangle_ax, scale=self.figure_size)
             color_triangle_ax.set_facecolor("#262930")  # match napari background color
             color_triangle_ax.set_title("barycentric triangle", color="white")
-            triangle = tax.heatmap(self.color_wheel, style="hexagonal", use_rgba=True, colorbar=False)
+            self.msk_color_wheel = tax.heatmap(self.color_wheel, style="hexagonal", use_rgba=True, colorbar=False)
 
             # self.msk_selection_mask = color_triangle_ax.imshow(
             #     self.selection_mask,
@@ -329,9 +392,10 @@ class DensityFigure(FigureCanvas):
             #     alpha=0.5,
             #     cmap=mask_cmap,
             # )
-            # color_wheel_ax.set_xlim([0, self.figure_size - 1])
-            # color_wheel_ax.set_ylim([0, self.figure_size - 1])
-            # color_wheel_ax.set_axis_off()
+            color_triangle_ax.set_xlim([0, self.figure_size - 1])
+            color_triangle_ax.set_ylim([0, self.figure_size - 1])
+            color_triangle_ax.set_aspect("equal")
+            color_triangle_ax.set_axis_off()
 
             tax.clear_matplotlib_ticks()
             tax.get_axes().axis('off')
@@ -340,6 +404,69 @@ class DensityFigure(FigureCanvas):
             self.lasso_density = LassoSelector(density_ax, self.onselect, button=1)
             self.lasso_color_triangle = LassoSelector(
                 color_triangle_ax, self.onselect, button=1
+            )
+            self.fig.canvas.draw_idle()
+
+        elif self.color_space == "Spherical":
+            self.fig.clear()
+            self.fig.set_facecolor("#262930")  # match napari background color
+
+            norm = None
+            if self.log_scale:
+                norm = colors.LogNorm()
+
+            # copy colormap and set bad values to black
+            mycmap = copy.copy(matplotlib.cm.get_cmap(self.cmap))
+            mycmap.set_bad(mycmap(0))
+
+            # create colormap for selection mask
+            mask_cmap = colors.LinearSegmentedColormap.from_list(
+                "colormap", [[0, 0, 0, 0], [0, 0, 0]]
+            )
+            mask_cmap = colors.LinearSegmentedColormap.from_list(
+                "colormap", [[0, 0, 0, 1], [0, 0, 0, 0]]
+            )
+
+            # density plot
+            density_ax = self.fig.add_subplot(121)
+            density_ax.set_facecolor("#262930")  # match napari background color
+            density_ax.set_title("azimuth vs. polar angle densities", color="white")
+            self.msk_density_wheel = density_ax.imshow(
+                self.density_wheel,
+                interpolation="nearest",
+                norm=norm,
+                cmap=mycmap,
+            )
+            density_ax.set_xlim([0, self.figure_size - 1])
+            density_ax.set_ylim([0, self.figure_size - 1])
+            density_ax.set_aspect("equal")
+            density_ax.set_axis_off()
+
+            # color wheel plot
+            color_wheel_ax = self.fig.add_subplot(122)
+            color_wheel_ax.set_facecolor(
+                "#262930"
+            )  # match napari background color
+            color_wheel_ax.set_title("azimuth vs. polar angle colormap", color="white")
+            self.msk_color_wheel = color_wheel_ax.imshow(
+                self.color_wheel,
+            )
+
+            self.msk_selection_mask = color_wheel_ax.imshow(
+                self.selection_mask,
+                vmax=1,
+                alpha=0.5,
+                cmap=mask_cmap,
+            )
+            # color_wheel_ax.invert_yaxis()
+            color_wheel_ax.set_xlim([0, self.figure_size - 1])
+            color_wheel_ax.set_ylim([0, self.figure_size - 1])
+            color_wheel_ax.set_axis_off()
+
+            # lasso selectors
+            self.lasso_density = LassoSelector(density_ax, self.onselect, button=1)
+            self.lasso_color_wheel = LassoSelector(
+                color_wheel_ax, self.onselect, button=1
             )
             self.fig.canvas.draw_idle()
 
@@ -357,7 +484,19 @@ class DensityFigure(FigureCanvas):
         if self.log_scale:
             norm = colors.LogNorm()
 
-        self.msk_density_wheel.set_norm(norm)
+        if self.color_space in ["HSV", "Spherical"]:
+            self.msk_density_wheel.set_norm(norm)
+        elif self.color_space == "Barycentric":
+            def myLogNorm(d):
+                """
+                d: python dictionary with key-value pairs and values are nonnegative integers
+                """
+                for key in d:
+                    d[key] = np.exp(float(d[key]))
+                return d
+            if not self.log_scale:
+                self.density_wheel_log_norm = myLogNorm(self.density_wheel)
+            self.update_figure()
         self.fig.canvas.draw_idle()
 
     def update_color_space(self, color_space: str):
@@ -367,8 +506,9 @@ class DensityFigure(FigureCanvas):
             self.color_wheel = hue_saturation_color_wheel(self.figure_size)
         elif color_space == "Barycentric":
             self.color_wheel = maxwell_hue_space(self.figure_size)
+        elif color_space == "Spherical":
+            self.color_wheel = spherical_coordinates_color_wheel(self.figure_size)
         self.update_density()
-        self.update_figure()
 
     def update_density_figure_parameters(
         self,
@@ -383,12 +523,8 @@ class DensityFigure(FigureCanvas):
         self.cmap = cmap
         self.value_threshold = value_threshold
 
-        self.color_wheel = hue_saturation_color_wheel(self.figure_size)
-
-        self.update_density()
+        self.update_color_space(color_space = self.color_space)
         self.update_lasso_pixel()
-
-        self.update_figure()
 
     def update_lasso_pixel(self):
         # Pixel coordinates for the density wheel
