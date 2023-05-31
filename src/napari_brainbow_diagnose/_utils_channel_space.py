@@ -1,7 +1,5 @@
 import math
-import ternary
 from ternary.helpers import simplex_iterator
-
 import numpy as np
 from numpy import tan, sqrt, pi, sin, cos
 import skimage.color as skc
@@ -173,7 +171,7 @@ def maxwell_hue_space(size: int = 100):
 
     Returns
     -------
-    python dictionary
+    dict
         The color triangle of rgb values in maxwell's hue space.
     """
 
@@ -189,9 +187,14 @@ def maxwell_hue_space(size: int = 100):
     return d
 
 def maxwell_hue_empty(size: int = 100):
+    """
+    Returns an empty maxwell_hue_space()
+    Note: every density value is defaulted to 1 for eventually passing a log-norm on the densities
+    """
+
     d = dict()
     for (i, j, k) in simplex_iterator(size):
-        d[(i, j, k)] = 2
+        d[(i, j, k)] = 1
     return d
 
 def spherical_coordinates_color_wheel(size: int = 100):
@@ -214,8 +217,12 @@ def spherical_coordinates_color_wheel(size: int = 100):
     for i in range(size):
         for j in range(size):
             theta, phi = pi/2*float(i)/float(size), pi/2*float(j)/float(size)
-            r = max(0, min(1, sin(theta) * cos(phi)))
-            g = max(0, min(1, sin(theta) * sin(phi)))
-            b = max(0, min(1, cos(theta)))
+            r = sin(theta) * cos(phi)
+            g = sin(theta) * sin(phi)
+            b = cos(theta)
+
+            # r = cos(theta)
+            # g = sin(theta)
+            # b = cos(pi/2 - phi)
             wheel[-i-1,j] = np.array([r, g, b])
     return wheel

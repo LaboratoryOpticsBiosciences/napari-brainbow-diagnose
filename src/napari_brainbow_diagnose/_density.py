@@ -5,8 +5,6 @@ import matplotlib.cm
 import matplotlib.colors as colors
 import numpy as np
 import ternary
-from ternary.helpers import simplex_iterator
-# from ternary.colormapping import colorbar_hack
 from matplotlib import path
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
@@ -105,24 +103,25 @@ def channels_vector_to_density_wheel(
     return wheel
 
 def channels_vector_to_density_triangle(
-    channel_vector: np.ndarray, size: int
+    channel_vector: np.ndarray, size: int, log_scale: bool
 ):
-    """Create a triangle of a given size.
+    """Create a density triangle of a given size.
 
     Parameters
     ----------
     channel_vector : np.ndarray
         The channel vector to create the wheel from.
         Must be of shape (N, channel).
-    bins : np.ndarray
-        The number of bins to use for the histogram.
     size : int
         The side length of the triangle.
+    log_scale: bool
+        Manual computation of a normed density for visualization. 
+        If true, the density values are passed through a logarithm.
 
     Returns
     -------
-    np.ndarray
-        The triangle of given side length.
+    dict
+        The triangle of given side length; a dictionary (as represented with ternary's simplex_iterator object)
     """
 
     # create empty triangle figure
@@ -142,6 +141,10 @@ def channels_vector_to_density_triangle(
     # at the corresponding barycentric coordinates
     for (r, g, b) in channel_vector:
         density_triangle[(r, g, b)] += 1
+    if log_scale:
+        density_triangle = {k: np.log(v) for k, v in density_triangle.items()}
+    else:
+        density_triangle = {k: v for k, v in density_triangle.items()}
     return density_triangle
 
 def channels_vector_to_density_spherical(
@@ -160,7 +163,7 @@ def channels_vector_to_density_spherical(
     Returns
     -------
     np.ndarray
-        The ?? of the given ??.
+        The histogram with given number of bins on each side of the plot
     """
 
     # create empty wheel figure
@@ -255,7 +258,7 @@ class DensityFigure(FigureCanvas):
                 hs_points, [360, 100], self.figure_size
             )
         elif self.color_space == "Barycentric":
-            self.density_wheel = channels_vector_to_density_triangle(vector_points, self.figure_size) if self.density_barycentric is None else self.density_barycentric
+            self.density_wheel = channels_vector_to_density_triangle(vector_points, self.figure_size, self.log_scale) if self.density_barycentric is None else self.density_barycentric
 
         elif self.color_space == "Spherical":
             self.density_wheel = channels_vector_to_density_spherical(vector_points, self.figure_size) if self.density_spherical is None else self.density_spherical
@@ -336,10 +339,6 @@ class DensityFigure(FigureCanvas):
             self.fig.clear()
             self.fig.set_facecolor("#262930")  # match napari background color
 
-            norm = None
-            if self.log_scale:
-                norm = colors.LogNorm()
-
             # copy colormap and set bad values to black
             mycmap = copy.copy(matplotlib.cm.get_cmap(self.cmap))
             mycmap.set_bad(mycmap(0))
@@ -357,23 +356,14 @@ class DensityFigure(FigureCanvas):
             density_ax.set_facecolor("#262930")  # match napari background color
             density_ax.set_title("barycentric density", color="white")
             _, tax = ternary.figure(ax = density_ax, scale=self.figure_size)
-            if self.log_scale:
-                tax.heatmap(
-                    self.density_wheel,
-                    style="hexagonal",
-                    use_rgba=False, 
-                    colorbar=False,
-                    cmap=mycmap,
-                )
-            else:
-                tax.heatmap(
-                    self.density_wheel_log_norm,
-                    style="hexagonal",
-                    use_rgba=False, 
-                    colorbar=False,
-                    cmap=mycmap,
-                )
-            # colorbar_hack(density_ax, min(self.density_wheel.values()), max(self.density_wheel.values()), cmap=mycmap, norm=norm)
+
+            self.msk_density_wheel = tax.heatmap(
+                self.density_wheel,
+                style="hexagonal",
+                use_rgba=False, 
+                colorbar=False,
+                cmap=mycmap,
+            )
             density_ax.set_xlim([0, self.figure_size - 1])
             density_ax.set_ylim([0, self.figure_size - 1])
             density_ax.set_aspect("equal")
@@ -386,12 +376,6 @@ class DensityFigure(FigureCanvas):
             color_triangle_ax.set_title("barycentric triangle", color="white")
             self.msk_color_wheel = tax.heatmap(self.color_wheel, style="hexagonal", use_rgba=True, colorbar=False)
 
-            # self.msk_selection_mask = color_triangle_ax.imshow(
-            #     self.selection_mask,
-            #     vmax=1,
-            #     alpha=0.5,
-            #     cmap=mask_cmap,
-            # )
             color_triangle_ax.set_xlim([0, self.figure_size - 1])
             color_triangle_ax.set_ylim([0, self.figure_size - 1])
             color_triangle_ax.set_aspect("equal")
@@ -487,16 +471,7 @@ class DensityFigure(FigureCanvas):
         if self.color_space in ["HSV", "Spherical"]:
             self.msk_density_wheel.set_norm(norm)
         elif self.color_space == "Barycentric":
-            def myLogNorm(d):
-                """
-                d: python dictionary with key-value pairs and values are nonnegative integers
-                """
-                for key in d:
-                    d[key] = np.exp(float(d[key]))
-                return d
-            if not self.log_scale:
-                self.density_wheel_log_norm = myLogNorm(self.density_wheel)
-            self.update_figure()
+            self.update_density()
         self.fig.canvas.draw_idle()
 
     def update_color_space(self, color_space: str):
