@@ -5,16 +5,8 @@ import numpy as np
 
 from magicgui import magicgui
 from magicgui import magic_factory
+from ._utils_channel_space import rgb_to_maxwell_triangle
 import pathlib
-
-def rgb_to_xy(r, g, b):
-    s = r+g+b
-    r = r/s
-    g = g/s
-    b = b/s
-    x = (r-b)/np.sqrt(3)
-    y = g
-    return x, y
 
 @magic_factory(call_button="Create a Points layer", auto_call=False)
 def read_csv_widget(filename = pathlib.Path('/path/to/csv/file.csv')):
@@ -28,6 +20,6 @@ def read_csv_widget(filename = pathlib.Path('/path/to/csv/file.csv')):
     points_layer = viewer.add_points(coordinates, name='points', face_color=colors, edge_color=colors, size=20, out_of_slice_display=True)
     
     # Add Maxwell coordinates
-    df['x'], df['y'] = rgb_to_xy(df['red'], df['green'], df['blue'])
-    features_table = {'red': df['red'].values, 'green': df['green'].values, 'blue': df['blue'].values, 'x': df['x'].values, 'y': df['y'].values}
+    df['maxwell_x'], df['maxwell_y'] = rgb_to_maxwell_triangle(df['red'], df['green'], df['blue'])
+    features_table = {'red': df['red'].values, 'green': df['green'].values, 'blue': df['blue'].values, 'maxwell_x': df['maxwell_x'].values, 'maxwell_y': df['maxwell_y'].values}
     points_layer.features = features_table
