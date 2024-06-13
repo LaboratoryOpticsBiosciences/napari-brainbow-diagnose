@@ -38,6 +38,11 @@ def rgb_to_maxwell_triangle(r, g, b):
     y = g
     return x, y
 
+def calculate_brightness(r, g, b):
+    """
+    Given standardized values (from 0 to 1) of rgb return brightness
+    """
+    return (1 / 2)*(np.maximum(np.maximum(r, g), b) + np.minimum(np.minimum(r, g), b))
 
 # TODO ajouter un paramètre pour choisir l'axe des canaux
 def get_channels_ranges(a: np.ndarray) -> np.ndarray:
