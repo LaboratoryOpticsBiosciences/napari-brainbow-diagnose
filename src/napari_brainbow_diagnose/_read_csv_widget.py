@@ -68,4 +68,4 @@ def add_features_widget(points_layer: Points, points_selection: bool):
         for point_index in selected:
             clustering[point_index] = 1
 
-        points_layer.features['selected_points'] = clustering
+        points_layer.features['CLUSTER'] = clustering.astype(int)
