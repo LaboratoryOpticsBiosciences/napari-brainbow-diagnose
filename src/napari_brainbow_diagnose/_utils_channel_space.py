@@ -27,6 +27,24 @@ def rgb_to_hsv(rgb: np.ndarray, channel_axis: int = -1) -> np.ndarray:
     return skc.rgb2hsv(rgb, channel_axis=channel_axis)
 
 
+def rgb_to_maxwell_triangle(r, g, b):
+    """
+    Given coordinates in rgb color space, returns x and y coordinates of the Maxwell triangle.
+    """
+    s = r+g+b
+    r = r/s
+    g = g/s
+    b = b/s
+    x = (r-b)/np.sqrt(3)
+    y = g
+    return x, y
+
+def calculate_brightness(r, g, b):
+    """
+    Given standardized values (from 0 to 1) of rgb return brightness
+    """
+    return (1 / 2)*(np.maximum(np.maximum(r, g), b) + np.minimum(np.minimum(r, g), b))
+
 # TODO ajouter un paramètre pour choisir l'axe des canaux
 def get_channels_ranges(a: np.ndarray) -> np.ndarray:
     """

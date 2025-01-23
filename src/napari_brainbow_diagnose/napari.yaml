@@ -14,6 +14,12 @@ contributions:
     - id: napari-brainbow-diagnose.DiagnoseWidget
       python_name: napari_brainbow_diagnose._widget:DiagnoseWidget
       title: Diagnose Brainbow Image
+    - id: napari-brainbow-diagnose.read_csv_widget
+      python_name: napari_brainbow_diagnose._read_csv_widget:read_csv_widget
+      title: Load a Points layer
+    - id: napari-brainbow-diagnose.add_features_widget
+      python_name: napari_brainbow_diagnose._read_csv_widget:add_features_widget
+      title: Add color features to existing Points layer
   sample_data:
     - command: napari-brainbow-diagnose.make_rgb_cube_data
       display_name: RGB Cube
@@ -22,7 +28,13 @@ contributions:
       display_name: Chroms Cortex Sample
       key: unique_id.2
   widgets:
+    - command: napari-brainbow-diagnose.read_csv_widget
+      display_name: Load a Points layer
+    - command: napari-brainbow-diagnose.add_features_widget
+      display_name: Add color features to existing Points layer
     - command: napari-brainbow-diagnose.DiagnoseWidget
       display_name: Diagnose Brainbow Image
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Brainbow Tooltip
+
+
