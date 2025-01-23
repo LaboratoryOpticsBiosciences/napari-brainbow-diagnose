@@ -1,6 +1,7 @@
 import math
-
+from ternary.helpers import simplex_iterator
 import numpy as np
+from numpy import tan, sqrt, pi, sin, cos
 import skimage.color as skc
 
 from ._utils_shape import get_2D_wheel_coordinate, image_to_flat_data_points
@@ -25,6 +26,24 @@ def rgb_to_hsv(rgb: np.ndarray, channel_axis: int = -1) -> np.ndarray:
     """
     return skc.rgb2hsv(rgb, channel_axis=channel_axis)
 
+
+def rgb_to_maxwell_triangle(r, g, b):
+    """
+    Given coordinates in rgb color space, returns x and y coordinates of the Maxwell triangle.
+    """
+    s = r+g+b
+    r = r/s
+    g = g/s
+    b = b/s
+    x = (r-b)/np.sqrt(3)
+    y = g
+    return x, y
+
+def calculate_brightness(r, g, b):
+    """
+    Given standardized values (from 0 to 1) of rgb return brightness
+    """
+    return (1 / 2)*(np.maximum(np.maximum(r, g), b) + np.minimum(np.minimum(r, g), b))
 
 # TODO ajouter un paramètre pour choisir l'axe des canaux
 def get_channels_ranges(a: np.ndarray) -> np.ndarray:
@@ -163,5 +182,71 @@ def hue_saturation_color_wheel(size: int = 100) -> np.ndarray:
             if s <= 1:
                 rgb = skc.hsv2rgb([h, s, 1]) * 255
                 wheel[size - 1 - x, size - 1 - y] = rgb
+    return wheel
 
+def maxwell_hue_space(size: int = 100):
+    """
+    Returns a dictionary representing a barycentric color triangle
+
+    Parameters
+    ----------
+    size : int, optional
+        The size of the color triangle, defaults to 100.
+
+    Returns
+    -------
+    dict
+        The color triangle of rgb values in maxwell's hue space.
+    """
+
+    def color_point(x, y, z, scale = size):
+        r = x / float(scale)
+        g = y / float(scale)
+        b = z / float(scale)
+        return (r, g, b, 1.)
+
+    d = dict()
+    for (i, j, k) in simplex_iterator(size):
+        d[(i, j, k)] = color_point(i, j, k, size)
+    return d
+
+def maxwell_hue_empty(size: int = 100):
+    """
+    Returns an empty maxwell_hue_space()
+    Note: every density value is defaulted to 1 for eventually passing a log-norm on the densities
+    """
+
+    d = dict()
+    for (i, j, k) in simplex_iterator(size):
+        d[(i, j, k)] = 1
+    return d
+
+def spherical_coordinates_color_wheel(size: int = 100):
+    """
+    Returns a numpy array representing a color wheel of polar and
+    azimuth angle values.
+
+    Parameters
+    ----------
+    size : int, optional
+        The size of the color wheel, defaults to 100.
+
+    Returns
+    -------
+    np.ndarray
+        The color wheel of polar and azimuth angle values.
+    """
+
+    wheel = np.zeros((size,size,3)).astype("float")
+    for i in range(size):
+        for j in range(size):
+            theta, phi = pi/2*float(i)/float(size), pi/2*float(j)/float(size)
+            r = sin(theta) * cos(phi)
+            g = sin(theta) * sin(phi)
+            b = cos(theta)
+
+            # r = cos(theta)
+            # g = sin(theta)
+            # b = cos(pi/2 - phi)
+            wheel[-i-1,j] = np.array([r, g, b])
     return wheel
