@@ -1,10 +1,20 @@
 # Object to create a widget for the plugin to be displayed in napari
 # with all the necessary buttons and sliders of the different subwidgets.
 
+import napari
+import numpy as np
+import pandas as pd
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from ._density import DensityFigure
-from ._utils_channel_space import image_mask_of_wheel_selection
+from ._utils_channel_space import (
+    get_2D_wheel_coordinate,
+    image_mask_of_wheel_selection,
+    rgb_to_hsv,
+    rgb_to_maxwell_triangle,
+    rgb_to_spherical,
+)
+from ._utils_image import get_mean_intensity_ellipse
 from ._utils_io import empty_brainbow_image, get_brainbow_image_from_layers
 from ._utils_widget import (
     brainbow_layers_selector,
@@ -14,6 +24,85 @@ from ._utils_widget import (
     layers_event_callback_connector,
     wheel_mask_to_image_mask,
 )
+
+
+def create_rgb_features_widget(
+    red_layer: "napari.layers.Image",
+    green_layer: "napari.layers.Image",
+    blue_layer: "napari.layers.Image",
+    point_layer: "napari.layers.Points",
+    ellipse_radius: str = "1,1,1",
+    compute_channel_space: bool = True,
+) -> None:
+    # check if the radius is a list of integers
+    try:
+        ellipse_radius = [int(r) for r in ellipse_radius.split(",") if r != ""]
+    except ValueError:
+        raise ValueError(
+            "The radius should be a list of integers separated by commas."
+        )
+
+    assert len(ellipse_radius) == red_layer.data.ndim, (
+        "The number of dimensions in the radius should be the same as the "
+        "number of dimensions in the image."
+    )
+    print(len(ellipse_radius), red_layer.data.ndim)
+
+    means = []
+    means.append(
+        get_mean_intensity_ellipse(
+            red_layer.data, point_layer.data, radius=ellipse_radius
+        )
+    )
+    means.append(
+        get_mean_intensity_ellipse(
+            green_layer.data, point_layer.data, radius=ellipse_radius
+        )
+    )
+    means.append(
+        get_mean_intensity_ellipse(
+            blue_layer.data, point_layer.data, radius=ellipse_radius
+        )
+    )
+    means = np.array(means).T
+
+    point_layer.features = pd.DataFrame(means, columns=["R", "G", "B"])
+
+    if compute_channel_space:
+        compute_all_channel_space(point_layer=point_layer)
+
+
+def compute_all_channel_space(
+    point_layer: "napari.layers.Points",
+) -> None:
+
+    # check that point_layer features has the RGB columns
+    if not all([c in point_layer.features.columns for c in ["R", "G", "B"]]):
+        raise ValueError(
+            "The point layer should have the columns 'R', 'G', 'B'."
+        )
+
+    rgb = point_layer.features[["R", "G", "B"]].values
+    hsv = rgb_to_hsv(rgb)
+
+    wheel_pos = get_2D_wheel_coordinate(hsv[:, 0], hsv[:, 1])
+    wheel_x, wheel_y = wheel_pos[0], wheel_pos[1]
+
+    maxwell_x, maxwell_y = rgb_to_maxwell_triangle(
+        rgb[:, 0], rgb[:, 1], rgb[:, 2]
+    )
+    radius, theta, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
+
+    point_layer.features["H"] = hsv[:, 0]
+    point_layer.features["S"] = hsv[:, 1]
+    point_layer.features["V"] = hsv[:, 2]
+    point_layer.features["wheel_x"] = wheel_x
+    point_layer.features["wheel_y"] = wheel_y
+    point_layer.features["X_maxwell"] = maxwell_x
+    point_layer.features["Y_maxwell"] = maxwell_y
+    point_layer.features["spherical_radius"] = radius
+    point_layer.features["spherical_theta"] = theta
+    point_layer.features["spherical_phi"] = phi
 
 
 class DiagnoseWidget(QWidget):

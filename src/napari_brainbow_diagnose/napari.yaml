@@ -14,6 +14,12 @@ contributions:
     - id: napari-brainbow-diagnose.DiagnoseWidget
       python_name: napari_brainbow_diagnose._widget:DiagnoseWidget
       title: Diagnose Brainbow Image
+    - id: napari-brainbow-diagnose.create_rgb_features_widget
+      python_name: napari_brainbow_diagnose._widget:create_rgb_features_widget
+      title: Extract RGB features from Brainbow image
+    - id: napari-brainbow-diagnose.compute_all_channel_space
+      python_name: napari_brainbow_diagnose._widget:compute_all_channel_space
+      title: RGB features to all channel spaces
     - id: napari-brainbow-diagnose.read_csv_widget
       python_name: napari_brainbow_diagnose._read_csv_widget:read_csv_widget
       title: Load a Points layer
@@ -34,7 +40,11 @@ contributions:
       display_name: Add color features to existing Points layer
     - command: napari-brainbow-diagnose.DiagnoseWidget
       display_name: Diagnose Brainbow Image
+    - command: napari-brainbow-diagnose.create_rgb_features_widget
+      display_name: Extract RGB features from Brainbow image
+      autogenerate: true
+    - command: napari-brainbow-diagnose.compute_all_channel_space
+      display_name: RGB features to all channel spaces
+      autogenerate: true
     - command: napari-brainbow-diagnose.tooltip_pointer_widget
       display_name: Brainbow Tooltip
-
-
