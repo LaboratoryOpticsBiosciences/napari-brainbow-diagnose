@@ -1,10 +1,11 @@
 import math
-from ternary.helpers import simplex_iterator
-import numpy as np
-from numpy import tan, sqrt, pi, sin, cos
-import skimage.color as skc
 
-from ._utils_shape import get_2D_wheel_coordinate, image_to_flat_data_points
+import numpy as np
+import skimage.color as skc
+from numpy import cos, pi, sin, sqrt
+from ternary.helpers import simplex_iterator
+
+from ._utils_shape import image_to_flat_data_points
 
 # this files allows conversion between different color spaces
 
@@ -27,23 +28,58 @@ def rgb_to_hsv(rgb: np.ndarray, channel_axis: int = -1) -> np.ndarray:
     return skc.rgb2hsv(rgb, channel_axis=channel_axis)
 
 
+def get_2D_wheel_coordinate(angles: np.ndarray, radii: np.ndarray):
+    """Create a wheel of a given radius and size.
+
+    Parameters
+    ----------
+    angles : np.ndarray
+        List of angles between 0 and 1.
+    radii : np.ndarray
+        List of radii. 0 is in the center, 1 is on the edge.
+
+    Returns
+    -------
+    np.ndarray
+        The coordinates of each point on the 2D wheel.
+        The coordinates are in the range [0, 1] for both axes.
+    """
+    angles = np.array(angles) * 2 * np.pi
+    x = radii * np.cos(angles)
+    y = radii * np.sin(angles)
+    pos = (1 / 2) * np.array([1 + x, 1 + y])
+    return pos
+
+
 def rgb_to_maxwell_triangle(r, g, b):
     """
-    Given coordinates in rgb color space, returns x and y coordinates of the Maxwell triangle.
+    Given coordinates in rgb color space, returns x and y coordinates
+    of the Maxwell triangle.
     """
-    s = r+g+b
-    r = r/s
-    g = g/s
-    b = b/s
-    x = (r-b)/np.sqrt(3)
+    s = r + g + b
+    r = r / s
+    g = g / s
+    b = b / s
+    x = (r - b) / np.sqrt(3)
     y = g
     return x, y
+
+
+def rgb_to_spherical(r, g, b):
+    radius = np.linalg.norm([r, g, b])
+    theta = np.arctan2(sqrt(r**2 + g**2), b)
+    phi = np.arctan2(g, r)
+    return radius, theta, phi
+
 
 def calculate_brightness(r, g, b):
     """
     Given standardized values (from 0 to 1) of rgb return brightness
     """
-    return (1 / 2)*(np.maximum(np.maximum(r, g), b) + np.minimum(np.minimum(r, g), b))
+    return (1 / 2) * (
+        np.maximum(np.maximum(r, g), b) + np.minimum(np.minimum(r, g), b)
+    )
+
 
 # TODO ajouter un paramètre pour choisir l'axe des canaux
 def get_channels_ranges(a: np.ndarray) -> np.ndarray:
@@ -132,7 +168,7 @@ def image_selection_to_wheel_selection(image, selection, wheel_diameter):
     """
 
     # mask image by selection
-    masked_image = image[:, selection == True].T
+    masked_image = image[:, selection].T
 
     # get hue and saturation
     hs = rgb_to_hsv(masked_image, channel_axis=1)[..., :2]
@@ -184,6 +220,7 @@ def hue_saturation_color_wheel(size: int = 100) -> np.ndarray:
                 wheel[size - 1 - x, size - 1 - y] = rgb
     return wheel
 
+
 def maxwell_hue_space(size: int = 100):
     """
     Returns a dictionary representing a barycentric color triangle
@@ -199,27 +236,30 @@ def maxwell_hue_space(size: int = 100):
         The color triangle of rgb values in maxwell's hue space.
     """
 
-    def color_point(x, y, z, scale = size):
+    def color_point(x, y, z, scale=size):
         r = x / float(scale)
         g = y / float(scale)
         b = z / float(scale)
-        return (r, g, b, 1.)
+        return (r, g, b, 1.0)
 
     d = dict()
     for (i, j, k) in simplex_iterator(size):
         d[(i, j, k)] = color_point(i, j, k, size)
     return d
 
+
 def maxwell_hue_empty(size: int = 100):
     """
     Returns an empty maxwell_hue_space()
-    Note: every density value is defaulted to 1 for eventually passing a log-norm on the densities
+    Note: every density value is defaulted to 1 for eventually passing
+    a log-norm on the densities
     """
 
     d = dict()
     for (i, j, k) in simplex_iterator(size):
         d[(i, j, k)] = 1
     return d
+
 
 def spherical_coordinates_color_wheel(size: int = 100):
     """
@@ -237,10 +277,12 @@ def spherical_coordinates_color_wheel(size: int = 100):
         The color wheel of polar and azimuth angle values.
     """
 
-    wheel = np.zeros((size,size,3)).astype("float")
+    wheel = np.zeros((size, size, 3)).astype("float")
     for i in range(size):
         for j in range(size):
-            theta, phi = pi/2*float(i)/float(size), pi/2*float(j)/float(size)
+            theta, phi = pi / 2 * float(i) / float(size), pi / 2 * float(
+                j
+            ) / float(size)
             r = sin(theta) * cos(phi)
             g = sin(theta) * sin(phi)
             b = cos(theta)
@@ -248,5 +290,5 @@ def spherical_coordinates_color_wheel(size: int = 100):
             # r = cos(theta)
             # g = sin(theta)
             # b = cos(pi/2 - phi)
-            wheel[-i-1,j] = np.array([r, g, b])
+            wheel[-i - 1, j] = np.array([r, g, b])
     return wheel
