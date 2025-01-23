@@ -67,7 +67,7 @@ def get_channels_ranges(a: np.ndarray) -> np.ndarray:
 
 
 def image_mask_of_wheel_selection(
-    image: np.ndarray, wheel_selection: np.ndarray
+    image: np.ndarray, wheel_selection: np.ndarray, value_threshold: float
 ):
     """
     Returns a boolean mask of the wheel selection.
@@ -79,6 +79,9 @@ def image_mask_of_wheel_selection(
         Shape: (c, z, y, x) or (c, y, x)
     wheel_selection : np.ndarray
         The wheel selection to apply.
+    value_threshold : float
+        The value threshold to apply to the image voxel.
+        Only voxels with a value above the threshold will be selected.
 
     Returns
     -------
@@ -102,6 +105,9 @@ def image_mask_of_wheel_selection(
 
     selection_mask = selected_points.reshape(image.shape[1:])
     selection_mask = selection_mask.astype(bool)
+
+    print(selection_mask.shape, (hsv[2] < value_threshold).shape)
+    selection_mask[hsv[2] < value_threshold] = False
 
     return selection_mask
 

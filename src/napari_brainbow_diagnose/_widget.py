@@ -97,7 +97,12 @@ class DiagnoseWidget(QWidget):
             bool
         )
         mask_corrected = self.density_figure.selection_mask.astype(bool)
-        mask_on_image = image_mask_of_wheel_selection(channels, mask_corrected)
+
+        value_threshold = self.density_resolution_widget.value_threshold.value
+
+        mask_on_image = image_mask_of_wheel_selection(
+            channels, mask_corrected, value_threshold
+        )
 
         self.viewer.add_labels(mask_on_image, name="mask_on_image")
 
