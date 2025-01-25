@@ -9,24 +9,38 @@
 
 Explore image in channel coordinate space.
 Brainbow dataset have unique features that need to be addressed by specialized tools. This plugin aims at visualize and diagnose brainbow dataset.
-In particular we want to interact with the distribution of the dataset in the channel space.
+In particular we want to interact with the distribution in the channel space. This plugin allows you to visualize the distribution of the channel ratio in the image and to select pixel in the image and see where they are in the channel coordinate space. You can also use this plugin along with the [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation) plugin to visualize the distribution of the channel ratio of every point object in the image.
 
 ![demo_gif](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/demo_napari-brainbow-diagnose.gif)
 
-## Usage
+## Available Channel space transformation
 
-You can also look at the [demo notebook](docs/demo.ipynb)
+The following channel spaces are available:
+
+- Cartesian RGB
+- Hue-Saturation-Value planes [illustration (b)(f)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
+- Hue-Saturation wheel [illustration (g)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
+- Maxwell triangle (ternary plot) [illustration](https://en.wikipedia.org/wiki/Ternary_plot)
+- Spherical coordinates (Theta, Phi and Radius) [illustration](https://en.wikipedia.org/wiki/Spherical_coordinate_system)
+
+## Example Notebook
+
+You can use this plugin to visualize channel space of !
+- every voxel in the image (see [demo notebook](docs/demo.ipynb))
+- every object (aka center point) in the image (see [demo notebook](docs/cluster_plotter_compatibility.ipynb)). To use this notebook you need to install [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation).
 Find all menus under `Plugins > napari-brainbow-diagnose > Diagnose Brainbow Image`
 
-### Choose your dataset
+## Example Datasets
 
 If you want to use your dataset, you have to format it such as each channel is in one distinct `napari.Layers`
 You can open test dataset to try this plugin in `File > Open Sample > napari-brainbow-diagnose`.
 
 - The RGB Cube is an array with shape (3x256x256x256) cube : Great to check how the plugin work when all color are represented
-- Chrom Cortex Sample is an array with shape (3x256x256x256) #Hugo : Real life brainbow image (Cortex E18 Emx1Cre) !
+- ChroMS Cortex Sample is an array with shape (3x256x256x256) #Hugo : Real life brainbow image (Cortex E18 Emx1Cre) !
 
 Once you have your layers you can use the dropdown and select the corresponding layer. It is advised to match the `red, green, blue` order so the ratio you see on the napari viewer corresponds to the Hue-Saturation Wheel of the plugin.
+
+## Example using every voxel in the image
 
 ### Get Channel Ratio Density of the image
 
@@ -47,6 +61,8 @@ For example here on this screenshot we can see that:
 ### Create a selection of pixel in the image and show where they are in the channel coordinate system
 
 ![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/image_to_wheel_selection.gif)
+
+
 ## Installation
 
 You can install `napari-brainbow-diagnose` via [pip]:
