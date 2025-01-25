@@ -46,7 +46,6 @@ def create_rgb_features_widget(
         "The number of dimensions in the radius should be the same as the "
         "number of dimensions in the image."
     )
-    print(len(ellipse_radius), red_layer.data.ndim)
 
     means = []
     means.append(
@@ -67,6 +66,16 @@ def create_rgb_features_widget(
     means = np.array(means).T
 
     point_layer.features = pd.DataFrame(means, columns=["R", "G", "B"])
+    point_layer.features["SELECTED_CLUSTER"] = 0
+
+    def update_manual_selection_cluster(selected):
+        # reset selected cluster in features
+        point_layer.features["SELECTED_CLUSTER"] = 0
+        point_layer.features.loc[selected, "SELECTED_CLUSTER"] = 1
+
+    point_layer.selected_data.events.items_changed.connect(
+        update_manual_selection_cluster
+    )
 
     if compute_channel_space:
         compute_all_channel_space(point_layer=point_layer)
