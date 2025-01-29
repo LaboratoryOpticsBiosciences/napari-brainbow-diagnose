@@ -69,6 +69,10 @@ def rgb_to_spherical(r, g, b):
     radius = np.linalg.norm([r, g, b])
     theta = np.arctan2(sqrt(r**2 + g**2), b)
     phi = np.arctan2(g, r)
+
+    # convert rad to degree
+    theta = np.rad2deg(theta)
+    phi = np.rad2deg(phi)
     return radius, theta, phi
 
 
@@ -292,3 +296,43 @@ def spherical_coordinates_color_wheel(size: int = 100):
             # b = cos(pi/2 - phi)
             wheel[-i - 1, j] = np.array([r, g, b])
     return wheel
+
+
+def hue_saturation_metric(x, y, w_h=1, w_s=1):
+    """Custom metric to compute the distance between two points
+    in hue-saturation space. As hue is a circular variable,
+    the distance is computed as the circular distance between
+    the two hues. The saturation distance is computed as the linear
+    distance between the two saturations.
+
+    In mathematical terms, the distance is computed as:
+    sqrt(w_h * (1 - cos(h1 - h2)) + w_s * (s1 - s2)^2)
+
+    Parameters
+    ----------
+    x : np.ndarray
+        first point in hue-saturation space (h, s)
+    y : np.ndarray
+        second point in hue-saturation space (h, s)
+    w_h : int, optional
+        weight for hue distance, by default 1
+    w_s : int, optional
+        weight for saturation distance, by default
+
+    Returns
+    -------
+    float
+        distance between the two points in hue-saturation space
+    """
+    h1, s1 = x
+    h2, s2 = y
+
+    # Circular distance for hue
+    hue_diff = abs(h1 - h2) % (2 * np.pi)
+    hue_diff = min(hue_diff, 2 * np.pi - hue_diff) ** 2
+
+    # Linear distance for saturation
+    saturation_diff = (s1 - s2) ** 2
+
+    # Combined weighted distance
+    return np.sqrt(w_h * hue_diff + w_s * saturation_diff)
