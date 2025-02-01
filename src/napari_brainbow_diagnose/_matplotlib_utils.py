@@ -56,7 +56,7 @@ def scatter_polar_plot(
     theta: np.ndarray,
     r: np.ndarray,
     scatter: bool = True,
-    point_color: str = None,  # if none, color is computed from theta / r
+    point_color: str = None,
     color_bg: bool = False,
     theta_r_histogram: bool = False,
     wheel_histogram: bool = False,
