@@ -28,7 +28,7 @@ def hue_saturation_polar_plot(
     alpha: float = 1.0,
 ):
 
-    _, R, Theta = meshgrid_polar_coordinates()
+    _, R, Theta = meshgrid_polar_coordinates(n_angles, n_radii)
 
     # Convert polar coordinates to HSV values
     H = Theta / (2 * np.pi)  # Hue (angle normalized to [0, 1])
