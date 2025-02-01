@@ -56,19 +56,70 @@ def scatter_polar_plot(
     theta: np.ndarray,
     r: np.ndarray,
     scatter: bool = True,
+    point_color: str = None,  # if none, color is computed from theta / r
+    color_bg: bool = False,
     theta_r_histogram: bool = False,
     wheel_histogram: bool = False,
     log_scale: bool = False,
     kernel_density: bool = False,
     kernel_metric: str = "hue_saturation_wheel_metric",
     contour: bool = False,
-    color_bg: bool = False,
     n_angles: int = 360,
     n_radii: int = 100,
-    point_color: str = None,  # if none, color is computed from theta / r
     point_size=5,
     alpha=0.5,
 ):
+    """
+    Plot a scatter plot in polar coordinatesor its histogram,
+    density or contour.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Your matplotlib axe.
+    theta : np.ndarray
+        angles in radians.
+    r : np.ndarray
+        saturation values between 0 and 1.
+    scatter : bool, optional
+        If True, scatter plot is displayed, by default True
+    point_color : str, optional
+        If not None, the color of the points is set to this value.
+        If None, the color is computed from the theta and r values
+        by default None
+    color_bg : bool, optional
+        If True, the background is colored with the hue and saturation,
+        by default False
+    theta_r_histogram : bool, optional
+        If True, a histogram of the theta and r values is displayed,
+        by default False
+    wheel_histogram : bool, optional
+        If True, a histogram of the wheel values is displayed, by default False
+    log_scale : bool, optional
+        If True, the color bar is displayed in log scale, by default False
+    kernel_density : bool, optional
+        If True, the kernel density is displayed, by default False
+    kernel_metric : str, optional
+        The metric used for the kernel density.
+        Custom options:
+        - "hue_saturation_metric": Distance in hue-saturation plane space
+        - "hue_saturation_wheel_metric": distance once projected on the wheel.
+        All other metrics from sklearn.neighbors.KernelDensity are available.
+        by default "hue_saturation_wheel_metric".
+    contour : bool, optional
+        If True, the contour plot is displayed, by default False
+    n_angles : int, optional
+        Number of bins for the angles, by default 360
+    n_radii : int, optional
+        Number of bins for the radii, by default 100
+    alpha : float, optional
+        Transparency of all the plots, by default 0.5
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        Your matplotlib axe with the plot.
+    """
 
     if color_bg:
         ax = hue_saturation_polar_plot(ax, alpha=alpha)
