@@ -2,9 +2,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm, hsv_to_rgb
+from scipy.interpolate import griddata
 from sklearn.neighbors import KernelDensity
 
-from ._utils_channel_space import hue_saturation_metric
+from ._utils_channel_space import (
+    get_2D_wheel_coordinate,
+    hue_saturation_metric,
+)
 
 
 def meshgrid_polar_coordinates(n_angles: int = 360, n_radii: int = 100):
@@ -51,7 +55,8 @@ def scatter_polar_plot(
     theta: np.ndarray,
     r: np.ndarray,
     scatter: bool = True,
-    histogram: bool = False,
+    theta_r_histogram: bool = False,
+    wheel_histogram: bool = False,
     log_scale: bool = False,
     kernel_density: bool = False,
     contour: bool = False,
@@ -66,27 +71,34 @@ def scatter_polar_plot(
     if color_bg:
         ax = hue_saturation_polar_plot(ax, alpha=alpha)
 
-    if histogram:
+    if theta_r_histogram:
         grid_points, R, Theta = meshgrid_polar_coordinates(n_angles, n_radii)
 
         hist, _, _ = np.histogram2d(
             theta, r, bins=(n_angles, n_radii), range=[[0, 2 * np.pi], [0, 1]]
         )
 
-        label = "Number of points"
         if log_scale:
-            max_ = np.max(hist)
-            hist[hist <= 0] = np.nan
-            hist = np.log(hist, where=hist != np.nan)
-            h = ax.pcolormesh(Theta, R, hist, norm=LogNorm(0.1, max_))
-            label += " in log scale"
+            norm = LogNorm()
         else:
-            h = ax.pcolormesh(Theta, R, hist)
+            norm = None
+        h = ax.pcolormesh(Theta, R, hist, norm=norm)
 
-        # add colorbar to axis
+    if wheel_histogram:
+        ax, h = plot_histogram_wheel(
+            ax, theta, r, log_scale=log_scale, bins=(n_angles, n_radii)
+        )
 
+    if wheel_histogram or theta_r_histogram:
+        label = "Number of points"
         plt.colorbar(
-            h, ax=ax, orientation="horizontal", label=label, extend="max"
+            h,
+            ax=ax,
+            orientation="horizontal",
+            label=label,
+            extend="max",
+            fraction=0.046,
+            pad=0.04,
         )
 
     if contour or kernel_density:
@@ -134,3 +146,51 @@ def scatter_polar_plot(
             ax.scatter(theta, r, c=point_color, s=point_size, alpha=alpha)
 
     return ax
+
+
+def plot_histogram_wheel(
+    ax: "matplotlib.axes.Axes",
+    theta: np.ndarray,
+    r: np.ndarray,
+    bins: tuple = (360, 100),
+    log_scale: bool = False,
+):
+    x_wheel, y_wheel = get_2D_wheel_coordinate(theta, r)
+
+    x_bins = np.linspace(-1, 1, bins[0] + 1)
+    y_bins = np.linspace(-1, 1, bins[1] + 1)
+
+    hist, x_edges, y_edges = np.histogram2d(
+        x_wheel, y_wheel, bins=[x_bins, y_bins]
+    )
+
+    # Get bin centers (instead of edges)
+    x_centers = (x_edges[:-1] + x_edges[1:]) / 2
+    y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+    Xc, Yc = np.meshgrid(x_centers, y_centers)  # Grid of bin centers
+
+    # Flatten for interpolation
+    cartesian_points = np.array([Xc.ravel(), Yc.ravel()]).T
+    hist_values = hist.T.ravel()  # Flatten histogram values
+
+    theta_bins = np.linspace(0, 2 * np.pi, bins[0] + 1)
+    r_bins = np.linspace(0, 1, bins[1] + 1)
+
+    T, R = np.meshgrid(theta_bins, r_bins)  # Polar mesh grid
+
+    # Convert polar grid to Cartesian for interpolation
+    x_polar, y_polar = get_2D_wheel_coordinate(T.flatten(), R.flatten())
+
+    C = griddata(
+        cartesian_points, hist_values, (x_polar, y_polar), method="nearest"
+    )
+    C = C.reshape(R.shape)  # Reshape back to grid shape
+
+    if log_scale:
+        norm = LogNorm()
+    else:
+        norm = None
+
+    h = ax.pcolormesh(T, R, C, norm=norm)
+
+    return ax, h
