@@ -92,11 +92,9 @@ def scatter_polar_plot(
     if contour or kernel_density:
         # Compute the density
         grid_points, R, Theta = meshgrid_polar_coordinates(n_angles, n_radii)
-        # Scott's rule of thumb for bandwidth
-        bandwith = len(theta) ** (-1.0 / (2 + 4))  # d=2
-        print(bandwith)
+
         kde = KernelDensity(
-            bandwidth=bandwith,
+            bandwidth="scott",
             kernel="gaussian",
             metric="pyfunc",
             metric_params={"func": hue_saturation_metric},
