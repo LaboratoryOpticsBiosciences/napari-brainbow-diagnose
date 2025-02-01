@@ -112,7 +112,7 @@ def scatter_polar_plot(
             metric_params={"func": hue_saturation_metric},
         )
         kde.fit(np.vstack([theta, r]).T)
-        density = kde.score_samples(np.vstack([Theta.ravel(), R.ravel()]).T)
+        density = kde.score_samples(grid_points.T)
 
         if not log_scale:
             density = np.exp(density)
