@@ -336,3 +336,16 @@ def hue_saturation_metric(x, y, w_h=1, w_s=1):
 
     # Combined weighted distance
     return np.sqrt(w_h * hue_diff + w_s * saturation_diff)
+
+
+def hue_saturation_wheel_metric(x, y, w_h=1, w_s=1):
+    """Custom metric to compute the distance between two points
+    in hue-saturation wheel space.
+    It will first compute the final position of the points on the wheel
+    and then compute the distance between them using a weighted cartesian
+    distance.
+    """
+    x_pos = get_2D_wheel_coordinate(x[0], x[1])
+    y_pos = get_2D_wheel_coordinate(y[0], y[1])
+
+    return np.linalg.norm(x_pos - y_pos)

@@ -8,6 +8,7 @@ from sklearn.neighbors import KernelDensity
 from ._utils_channel_space import (
     get_2D_wheel_coordinate,
     hue_saturation_metric,
+    hue_saturation_wheel_metric,
 )
 
 
@@ -59,6 +60,7 @@ def scatter_polar_plot(
     wheel_histogram: bool = False,
     log_scale: bool = False,
     kernel_density: bool = False,
+    kernel_metric: str = "hue_saturation_wheel_metric",
     contour: bool = False,
     color_bg: bool = False,
     n_angles: int = 360,
@@ -105,12 +107,23 @@ def scatter_polar_plot(
         # Compute the density
         grid_points, R, Theta = meshgrid_polar_coordinates(n_angles, n_radii)
 
+        if kernel_metric == "hue_saturation_wheel_metric":
+            metric = "pyfunc"
+            metric_params_func = {"func": hue_saturation_wheel_metric}
+        elif kernel_metric == "hue_saturation_metric":
+            metric = "pyfunc"
+            metric_params_func = {"func": hue_saturation_metric}
+        else:
+            metric = kernel_metric
+            metric_params_func = None
         kde = KernelDensity(
             bandwidth="scott",
             kernel="gaussian",
-            metric="pyfunc",
-            metric_params={"func": hue_saturation_metric},
+            metric=metric,
+            metric_params=metric_params_func,
+            rtol=10,  # force higher rtol for faster computation
         )
+
         kde.fit(np.vstack([theta, r]).T)
         density = kde.score_samples(grid_points.T)
 
