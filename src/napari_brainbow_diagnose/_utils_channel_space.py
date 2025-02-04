@@ -76,6 +76,13 @@ def rgb_to_spherical(r, g, b):
     return radius, theta, phi
 
 
+def spherical_to_rgb(radius, theta, phi):
+    r = radius * np.sin(theta) * np.cos(phi)
+    g = radius * np.sin(theta) * np.sin(phi)
+    b = radius * np.cos(theta)
+    return r, g, b
+
+
 def calculate_brightness(r, g, b):
     """
     Given standardized values (from 0 to 1) of rgb return brightness
@@ -336,3 +343,16 @@ def hue_saturation_metric(x, y, w_h=1, w_s=1):
 
     # Combined weighted distance
     return np.sqrt(w_h * hue_diff + w_s * saturation_diff)
+
+
+def hue_saturation_wheel_metric(x, y, w_h=1, w_s=1):
+    """Custom metric to compute the distance between two points
+    in hue-saturation wheel space.
+    It will first compute the final position of the points on the wheel
+    and then compute the distance between them using a weighted cartesian
+    distance.
+    """
+    x_pos = get_2D_wheel_coordinate(x[0], x[1])
+    y_pos = get_2D_wheel_coordinate(y[0], y[1])
+
+    return np.linalg.norm(x_pos - y_pos)

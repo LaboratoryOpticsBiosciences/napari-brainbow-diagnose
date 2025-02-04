@@ -7,9 +7,13 @@
 [![codecov](https://codecov.io/gh/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/branch/main/graph/badge.svg)](https://codecov.io/gh/LaboratoryOpticsBiosciences/napari-brainbow-diagnose)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-brainbow-diagnose)](https://napari-hub.org/plugins/napari-brainbow-diagnose)
 
-Explore image in channel coordinate space.
-Brainbow dataset have unique features that need to be addressed by specialized tools. This plugin aims at visualize and diagnose brainbow dataset.
-In particular we want to interact with the distribution in the channel space. This plugin allows you to visualize the distribution of the channel ratio in the image and to select pixel in the image and see where they are in the channel coordinate space. You can also use this plugin along with the [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation) plugin to visualize the distribution of the channel ratio of every point object in the image.
+Explore image in channel coordinate spaces.
+
+
+**Original motivation**: Brainbow dataset have unique features that need to be addressed by specialized tools.
+This plugin allows you to visualize the distribution of the channel ratio interactively in the image space and channel spaces.
+
+You can also use this plugin along with the [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation) to interact with individual objects.
 
 ![demo_gif](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/demo_napari-brainbow-diagnose.gif)
 
@@ -17,18 +21,21 @@ In particular we want to interact with the distribution in the channel space. Th
 
 The following channel spaces are available:
 
-- Cartesian RGB
-- Hue-Saturation-Value planes [illustration (b)(f)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
-- Hue-Saturation wheel [illustration (g)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
-- Maxwell triangle (ternary plot) [illustration](https://en.wikipedia.org/wiki/Ternary_plot)
-- Spherical coordinates (Theta, Phi and Radius) [illustration](https://en.wikipedia.org/wiki/Spherical_coordinate_system)
+![image|width=10](https://github.com/user-attachments/assets/0dae9090-da16-4653-b466-a08289e061ea)
 
-## Example Notebook
 
-You can use this plugin to visualize channel space of !
-- every voxel in the image (see [demo notebook](docs/demo.ipynb))
-- every object (aka center point) in the image (see [demo notebook](docs/cluster_plotter_compatibility.ipynb)). To use this notebook you need to install [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation).
-Find all menus under `Plugins > napari-brainbow-diagnose > Diagnose Brainbow Image`
+From Cartesian RGB:
+- (a) Maxwell triangle (ternary plot) [illustration](https://en.wikipedia.org/wiki/Ternary_plot)
+- (c) Hue-Saturation wheel [illustration (g)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
+- (e) Spherical coordinates (Theta, Phi and Radius) [illustration](https://en.wikipedia.org/wiki/Spherical_coordinate_system)
+- (g,i) Hue-Saturation-Value planes [illustration (b)(f)](https://en.wikipedia.org/wiki/File:Hsl-hsv_models.svg)
+
+## Example Notebooks
+
+You can use this plugin to visualize channel space of:
+- interactively every voxel in the image (see [demo notebook](docs/demo.ipynb))
+- interactively every object (aka center point) in the image (see [demo notebook](docs/cluster_plotter_compatibility.ipynb)). To use this notebook you need to install [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation).
+- Not interactive in matplotlib to export figures: (see [demo notebook](docs/plot_color_space_matplotlib.ipynb))
 
 ## Example Datasets
 
@@ -40,36 +47,13 @@ You can open test dataset to try this plugin in `File > Open Sample > napari-bra
 
 Once you have your layers you can use the dropdown and select the corresponding layer. It is advised to match the `red, green, blue` order so the ratio you see on the napari viewer corresponds to the Hue-Saturation Wheel of the plugin.
 
-## Example using every voxel in the image
-
-### Get Channel Ratio Density of the image
-
-When you click on `Compute brainbow image density` you will populate the Hue-Saturation density Wheel.
-This should allow you to quickly see which ratio is more present in your image. You can see the corresponding ratio according to the "HS Color wheel" on the right.
-For example here on this screenshot we can see that:
-
-- there is a high number of non saturated red-only ratio. (2)
-- there is not a high number of non saturated magenta ratio. (3)
-
-![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/ratio_view.png)
-
-### Create a selection of ratio on the channel coordinate system and apply it on the original image
-
-
-![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/wheel_to_image_selection.gif)
-
-### Create a selection of pixel in the image and show where they are in the channel coordinate system
-
-![ratio](https://raw.githubusercontent.com/LaboratoryOpticsBiosciences/napari-brainbow-diagnose/main/docs/image_to_wheel_selection.gif)
-
-
 ## Installation
 
 You can install `napari-brainbow-diagnose` via [pip]:
 
     pip install napari-brainbow-diagnose
 
-
+If you want to use [`napari-cluster-plotter` plugin](https://github.com/BiAPoL/napari-clusters-plotter?tab=readme-ov-file#installation)  you also need to install it manually
 
 To install latest development version :
 
