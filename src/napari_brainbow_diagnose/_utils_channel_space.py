@@ -76,6 +76,13 @@ def rgb_to_spherical(r, g, b):
     return radius, theta, phi
 
 
+def spherical_to_rgb(radius, theta, phi):
+    r = radius * np.sin(theta) * np.cos(phi)
+    g = radius * np.sin(theta) * np.sin(phi)
+    b = radius * np.cos(theta)
+    return r, g, b
+
+
 def calculate_brightness(r, g, b):
     """
     Given standardized values (from 0 to 1) of rgb return brightness
