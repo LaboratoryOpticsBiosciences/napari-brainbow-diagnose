@@ -281,21 +281,7 @@ def resume_polar_plot(theta, r, title=None, n_angles=36, n_radii=10):
         layout="constrained",
     )
 
-    # for ax one use histogra
     axs[0] = scatter_polar_plot(
-        axs[0],
-        theta,
-        r,
-        wheel_histogram=True,
-        log_scale=True,
-        n_angles=n_angles,
-        n_radii=n_radii,
-        point_color="black",
-        scatter=False,
-    )
-
-    # for ax two use scatter
-    axs[1] = scatter_polar_plot(
         axs[1],
         theta,
         r,
@@ -308,7 +294,18 @@ def resume_polar_plot(theta, r, title=None, n_angles=36, n_radii=10):
         scatter=True,
     )
 
-    # add a) and b) to the subplots at their left corner
+    axs[1] = scatter_polar_plot(
+        axs[0],
+        theta,
+        r,
+        wheel_histogram=True,
+        log_scale=True,
+        n_angles=n_angles,
+        n_radii=n_radii,
+        point_color="black",
+        scatter=False,
+    )
+
     axs[0].text(-0.1, 1.1, "a)", transform=axs[0].transAxes, fontsize=16)
     axs[1].text(-0.1, 1.1, "b)", transform=axs[1].transAxes, fontsize=16)
 
@@ -577,27 +574,27 @@ def resume_ternary(data: np.ndarray):
     for ax in axes:
         ax.set_aspect("equal")
 
-    # Create first ternary plot
-    _ = create_maxwell_triangle(
-        data,
-        ax=axes[0],
-        title="",
-        scale=100,
-        point_alpha=1,
-        point_color="black",
-        heatmap=True,
-    )
-
     # Create second ternary plot
     _ = create_maxwell_triangle(
         data,
         point_size=1,
-        ax=axes[1],
+        ax=axes[0],
         title="",
         scale=100,
         point_alpha=0.1,
         point_color="black",
         heatmap=False,
+    )
+
+    # Create first ternary plot
+    _ = create_maxwell_triangle(
+        data,
+        ax=axes[1],
+        title="",
+        scale=100,
+        point_alpha=1,
+        point_color="black",
+        heatmap=True,
     )
 
     # Adjust layout
