@@ -1000,11 +1000,11 @@ def plot_all(rgb):
     _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
     maxwell_data = rgb / rgb.sum(axis=1)[:, None]
 
-    axes[4][0].axis("off")
+    axes[1][0].axis("off")
 
-    axes[4][0] = plt.subplot(5, 2, 9, projection="polar")
+    axes[1][0] = plt.subplot(5, 2, 3, projection="polar")
     scatter_polar_plot(
-        axes[4][0],
+        axes[1][0],
         theta,
         r,
         color_bg=True,
@@ -1013,11 +1013,11 @@ def plot_all(rgb):
         point_size=0.1,
     )
 
-    axes[4][1].axis("off")
+    axes[1][1].axis("off")
 
-    axes[4][1] = plt.subplot(5, 2, 10, projection="polar")
+    axes[1][1] = plt.subplot(5, 2, 4, projection="polar")
     scatter_polar_plot(
-        axes[4][1],
+        axes[1][1],
         theta,
         r,
         color_bg=False,
@@ -1029,10 +1029,10 @@ def plot_all(rgb):
     )
 
     hue_value_plot(
-        axes[3][0], theta, r, point_color="white", point_size=1, alpha=0.5
+        axes[4][0], theta, r, point_color="white", point_size=1, alpha=0.5
     )
     hue_value_plot(
-        axes[3][1],
+        axes[4][1],
         theta,
         r,
         scatter=False,
@@ -1043,10 +1043,10 @@ def plot_all(rgb):
     )
 
     hue_saturation_plot(
-        axes[1][0], theta, r, point_color="black", point_size=1, alpha=0.5
+        axes[3][0], theta, r, point_color="black", point_size=1, alpha=0.5
     )
     hue_saturation_plot(
-        axes[1][1],
+        axes[3][1],
         theta,
         r,
         scatter=False,
@@ -1092,7 +1092,6 @@ def plot_all(rgb):
         scale=100,
     )
 
-    # add a), b), c), d), e) labels
     for i, ax in enumerate(axes.flatten()):
         ax.text(
             -0.2,
