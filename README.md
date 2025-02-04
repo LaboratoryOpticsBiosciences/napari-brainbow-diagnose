@@ -21,7 +21,7 @@ You can also use this plugin along with the [`napari-cluster-plotter` plugin](ht
 
 The following channel spaces are available:
 
-![image](https://github.com/user-attachments/assets/0dae9090-da16-4653-b466-a08289e061ea)
+![image|width=10](https://github.com/user-attachments/assets/0dae9090-da16-4653-b466-a08289e061ea)
 
 
 From Cartesian RGB:
