@@ -104,7 +104,7 @@ def scatter_polar_plot(
     r: np.ndarray,
     scatter: bool = True,
     point_color: str = None,
-    color_bg: bool = False,
+    background: bool = False,
     theta_r_histogram: bool = False,
     wheel_histogram: bool = False,
     log_scale: bool = False,
@@ -170,7 +170,7 @@ def scatter_polar_plot(
         Your matplotlib axe with the plot.
     """
 
-    if color_bg:
+    if background:
         ax = background_hue_saturation_plot(ax, alpha=alpha)
 
     if theta_r_histogram:
@@ -184,7 +184,7 @@ def scatter_polar_plot(
         hist = hist / np.sum(hist)
 
         if log_scale:
-            norm = LogNorm(0.001, 1)
+            norm = LogNorm(0.0001, 1, clip=True)
         else:
             norm = None
         h = ax.pcolormesh(Theta, R, hist, norm=norm)
@@ -298,13 +298,10 @@ def plot_histogram_wheel(
     bins: tuple = (360, 100),
     log_scale: bool = False,
 ):
-    x_wheel, y_wheel = get_2D_wheel_coordinate(theta, r)
-
-    x_bins = np.linspace(-1, 1, bins[0] + 1)
-    y_bins = np.linspace(-1, 1, bins[1] + 1)
+    x_wheel, y_wheel = get_2D_wheel_coordinate(theta / (2 * np.pi), r)
 
     hist, x_edges, y_edges = np.histogram2d(
-        x_wheel, y_wheel, bins=[x_bins, y_bins]
+        x_wheel, y_wheel, bins=bins, range=[[0, 1], [0, 1]]
     )
 
     # Get bin centers (instead of edges)
@@ -319,21 +316,25 @@ def plot_histogram_wheel(
     # density of hist
     hist_values = hist_values / np.sum(hist_values)
 
-    theta_bins = np.linspace(0, 2 * np.pi, bins[0] + 1)
-    r_bins = np.linspace(0, 1, bins[1] + 1)
+    theta_bins = np.linspace(0, 2 * np.pi, bins[0], endpoint=False)
+    r_bins = np.linspace(0, 1, bins[1], endpoint=False)
 
     T, R = np.meshgrid(theta_bins, r_bins)  # Polar mesh grid
 
     # Convert polar grid to Cartesian for interpolation
-    x_polar, y_polar = get_2D_wheel_coordinate(T.flatten(), R.flatten())
+    x_polar, y_polar = get_2D_wheel_coordinate(
+        T.flatten() / (2 * np.pi), R.flatten()
+    )
 
     C = griddata(
-        cartesian_points, hist_values, (x_polar, y_polar), method="nearest"
+        cartesian_points,
+        hist_values,
+        (x_polar, y_polar),
     )
     C = C.reshape(R.shape)  # Reshape back to grid shape
 
     if log_scale:
-        norm = LogNorm(0.001, 1)
+        norm = LogNorm(0.0001, 1, clip=True)
     else:
         norm = None
 
@@ -360,7 +361,7 @@ def resume_polar_plot(theta, r, title=None, bins=(360, 100)):
         axs[0],
         theta,
         r,
-        color_bg=True,
+        background=True,
         bins=bins,
         point_size=1,
         alpha=1,
@@ -580,7 +581,7 @@ def create_maxwell_triangle(
             fraction=0.046,
             pad=0.04,
             orientation="vertical",
-            norm=colors.LogNorm(0.001, 1),
+            norm=colors.LogNorm(0.0001, 1, clip=True),
             label="density",
         )
 
@@ -708,15 +709,17 @@ def cartesian_brainbow_plot(
     if histogram:
         grid_points, Y, X = meshgrid_polar_coordinates(bins[0], bins[1])
 
+        range_ = [[0, 2 * np.pi], [0, 1]]
         if not polar:
             Y = Y / np.max(Y)
             X = X / np.max(X)
+            range_ = [[0, 1], [0, 1]]
 
-        hist, _, _ = np.histogram2d(x, y, bins=bins)
+        hist, _, _ = np.histogram2d(x, y, bins=bins, range=range_)
         hist = hist / np.sum(hist)
 
         if log_scale:
-            norm = LogNorm(0.001, 1)
+            norm = LogNorm(0.0001, 1, clip=True)
         else:
             norm = None
         h = ax.pcolormesh(X, Y, hist, norm=norm)
@@ -1020,7 +1023,7 @@ def plot_all(rgb):
         # point_color="black",
         scatter=True,
         point_size=2,
-        color_bg=False,
+        background=False,
     )
 
     axes[1][1].axis("off")
@@ -1030,7 +1033,7 @@ def plot_all(rgb):
         axes[1][1],
         theta,
         r,
-        color_bg=False,
+        background=False,
         scatter=False,
         wheel_histogram=True,
         log_scale=True,
@@ -1152,7 +1155,7 @@ def plot_all_flat(rgb):
         # point_color="black",
         scatter=True,
         point_size=1,
-        color_bg=False,
+        background=False,
     )
 
     axes[1][1].axis("off")
@@ -1162,7 +1165,7 @@ def plot_all_flat(rgb):
         axes[1][1],
         theta,
         r,
-        color_bg=False,
+        background=False,
         scatter=False,
         wheel_histogram=True,
         log_scale=True,
