@@ -1005,6 +1005,7 @@ def plot_all(rgb):
 
     theta = hsv[:, 0] * 2 * np.pi
     r = hsv[:, 1]
+    v = hsv[:, 2]
 
     _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
     maxwell_data = rgb / rgb.sum(axis=1)[:, None]
@@ -1039,7 +1040,7 @@ def plot_all(rgb):
     hue_value_plot(
         axes[4][0],
         theta,
-        r,
+        v,
         #   point_color="white",
         point_size=2,
         alpha=1,
@@ -1048,7 +1049,7 @@ def plot_all(rgb):
     hue_value_plot(
         axes[4][1],
         theta,
-        r,
+        v,
         scatter=False,
         background=False,
         histogram=True,
@@ -1136,6 +1137,7 @@ def plot_all_flat(rgb):
 
     theta = hsv[:, 0] * 2 * np.pi
     r = hsv[:, 1]
+    v = hsv[:, 2]
 
     _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
     maxwell_data = rgb / rgb.sum(axis=1)[:, None]
@@ -1170,7 +1172,7 @@ def plot_all_flat(rgb):
     hue_value_plot(
         axes[0][4],
         theta,
-        r,
+        v,
         #   point_color="white",
         point_size=1,
         alpha=1,
@@ -1179,7 +1181,7 @@ def plot_all_flat(rgb):
     hue_value_plot(
         axes[1][4],
         theta,
-        r,
+        v,
         scatter=False,
         background=False,
         histogram=True,
