@@ -615,8 +615,17 @@ def create_maxwell_triangle(
                 alpha=point_alpha,
             )
         else:
+
+            color = data.copy()
+            # saturate the color
+            hsv = rgb_to_hsv(color)
+            # hsv[:, 1] = 1
+            hsv[:, 2] = 1
+
+            rgb = hsv_to_rgb(hsv)
+
             tax.scatter(
-                data * scale, color=data, s=point_size, alpha=point_alpha
+                data * scale, color=rgb, s=point_size, alpha=point_alpha
             )
         tax.set_background_color(set_background_color)
 
@@ -1007,10 +1016,10 @@ def plot_all(rgb):
         axes[1][0],
         theta,
         r,
-        color_bg=True,
-        point_color="black",
+        # point_color="black",
         scatter=True,
-        point_size=0.1,
+        point_size=2,
+        color_bg=False,
     )
 
     axes[1][1].axis("off")
@@ -1025,11 +1034,16 @@ def plot_all(rgb):
         wheel_histogram=True,
         log_scale=True,
         bins=(50, 50),
-        point_size=0.1,
     )
 
     hue_value_plot(
-        axes[4][0], theta, r, point_color="white", point_size=1, alpha=0.5
+        axes[4][0],
+        theta,
+        r,
+        #   point_color="white",
+        point_size=2,
+        alpha=1,
+        background=False,
     )
     hue_value_plot(
         axes[4][1],
@@ -1043,7 +1057,13 @@ def plot_all(rgb):
     )
 
     hue_saturation_plot(
-        axes[3][0], theta, r, point_color="black", point_size=1, alpha=0.5
+        axes[3][0],
+        theta,
+        r,
+        # point_color="black",
+        point_size=2,
+        alpha=1,
+        background=False,
     )
     hue_saturation_plot(
         axes[3][1],
@@ -1060,9 +1080,10 @@ def plot_all(rgb):
         axes[2][0],
         theta2 / 90,
         phi / 90,
-        point_color="black",
-        point_size=1,
-        alpha=0.5,
+        # point_color="black",
+        point_size=2,
+        alpha=1,
+        background=False,
     )
     spherical_plot(
         axes[2][1],
@@ -1077,17 +1098,148 @@ def plot_all(rgb):
 
     create_maxwell_triangle(
         maxwell_data,
-        point_size=1,
+        point_size=2,
         ax=axes[0][0],
-        point_color="black",
-        background=True,
+        # point_color="black",
+        background=False,
+    )
+
+    create_maxwell_triangle(
+        maxwell_data,
+        point_size=2,
+        ax=axes[0][1],
+        # point_color="black",
+        heatmap=True,
+        scale=100,
+    )
+
+    for i, ax in enumerate(axes.flatten()):
+        ax.text(
+            -0.2,
+            1.2,
+            f"{chr(97+i)})",
+            transform=ax.transAxes,
+            fontsize=20,
+            va="top",
+        )
+
+    return fig, axes
+
+
+def plot_all_flat(rgb):
+
+    # Create a figure with two subplots
+    fig, axes = plt.subplots(2, 5, figsize=(20, 10), layout="constrained")
+    # Ensure both subplots have an equal aspect ratio
+
+    hsv = rgb_to_hsv(rgb)
+
+    theta = hsv[:, 0] * 2 * np.pi
+    r = hsv[:, 1]
+
+    _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
+    maxwell_data = rgb / rgb.sum(axis=1)[:, None]
+
+    axes[0][1].axis("off")
+
+    axes[0][1] = plt.subplot(2, 5, 2, projection="polar")
+    scatter_polar_plot(
+        axes[0][1],
+        theta,
+        r,
+        # point_color="black",
+        scatter=True,
+        point_size=1,
+        color_bg=False,
+    )
+
+    axes[1][1].axis("off")
+
+    axes[1][1] = plt.subplot(2, 5, 7, projection="polar")
+    scatter_polar_plot(
+        axes[1][1],
+        theta,
+        r,
+        color_bg=False,
+        scatter=False,
+        wheel_histogram=True,
+        log_scale=True,
+        bins=(50, 50),
+    )
+
+    hue_value_plot(
+        axes[0][4],
+        theta,
+        r,
+        #   point_color="white",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    hue_value_plot(
+        axes[1][4],
+        theta,
+        r,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    hue_saturation_plot(
+        axes[0][3],
+        theta,
+        r,
+        # point_color="black",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    hue_saturation_plot(
+        axes[1][3],
+        theta,
+        r,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    spherical_plot(
+        axes[0][2],
+        theta2 / 90,
+        phi / 90,
+        # point_color="black",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    spherical_plot(
+        axes[1][2],
+        theta2 / 90,
+        phi / 90,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
     )
 
     create_maxwell_triangle(
         maxwell_data,
         point_size=1,
-        ax=axes[0][1],
-        point_color="black",
+        ax=axes[0][0],
+        # point_color="black",
+        background=False,
+    )
+
+    create_maxwell_triangle(
+        maxwell_data,
+        point_size=1,
+        ax=axes[1][0],
+        # point_color="black",
         heatmap=True,
         scale=100,
     )
