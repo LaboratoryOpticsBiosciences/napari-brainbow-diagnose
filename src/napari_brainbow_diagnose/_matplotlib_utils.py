@@ -4,6 +4,7 @@ import numpy as np
 import ternary
 from matplotlib.colors import LogNorm, hsv_to_rgb, rgb_to_hsv
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import griddata
 from sklearn.neighbors import KernelDensity
 from ternary.helpers import simplex_iterator
@@ -98,13 +99,76 @@ def background_spherical_plot(ax, bins=(90, 90), alpha=1):
     return ax
 
 
+def plot_rgb_cube(
+    ax: Axes3D,
+    rgb: np.ndarray,
+    histogram: bool = False,
+    bins: int = (30, 30, 30),
+    cmap: str = "viridis",
+    alpha: float = 1,
+    colorbar: bool = False,
+    point_size: int = 1,
+):
+    if histogram:
+        hist, _ = np.histogramdd(
+            rgb, bins=bins, range=[[0, 1], [0, 1], [0, 1]]
+        )
+        hist = hist / hist.sum()
+        x = np.linspace(0, 1, bins[0])
+        y = np.linspace(0, 1, bins[1])
+        z = np.linspace(0, 1, bins[2])
+        x, y, z = np.meshgrid(x, y, z, indexing="ij")
+
+        color = hist.reshape(-1)
+        scatter = ax.scatter(
+            x,
+            y,
+            z,
+            s=point_size,
+            c=color,
+            cmap=cmap,
+            norm=matplotlib.colors.LogNorm(0.0001, 1, clip=True),
+            alpha=alpha,
+        )
+
+        if colorbar:
+            fig = ax.get_figure()
+            from matplotlib.cm import ScalarMappable
+
+            fig.colorbar(
+                ScalarMappable(cmap=scatter.get_cmap(), norm=scatter.norm),
+                ax=ax,
+                shrink=0.6,
+                label="density",
+            )
+    else:
+        ax.scatter(*rgb.T, c=rgb, s=point_size, alpha=1)
+    ax.set_xlabel("R")
+    ax.set_ylabel("G")
+    ax.set_zlabel("B")
+    ax.view_init(30, 30)
+
+    # move tick closer to the axes
+
+    ax.xaxis.set_tick_params(pad=0)
+    ax.yaxis.set_tick_params(pad=0)
+    ax.zaxis.set_tick_params(pad=0)
+
+    # move labels closer to the axes
+    ax.xaxis.labelpad = 0
+    ax.yaxis.labelpad = 0
+    ax.zaxis.labelpad = 0
+
+    return ax
+
+
 def scatter_polar_plot(
     ax: "matplotlib.axes.Axes",
     theta: np.ndarray,
     r: np.ndarray,
     scatter: bool = True,
     point_color: str = None,
-    color_bg: bool = False,
+    background: bool = False,
     theta_r_histogram: bool = False,
     wheel_histogram: bool = False,
     log_scale: bool = False,
@@ -170,7 +234,7 @@ def scatter_polar_plot(
         Your matplotlib axe with the plot.
     """
 
-    if color_bg:
+    if background:
         ax = background_hue_saturation_plot(ax, alpha=alpha)
 
     if theta_r_histogram:
@@ -184,7 +248,7 @@ def scatter_polar_plot(
         hist = hist / np.sum(hist)
 
         if log_scale:
-            norm = LogNorm(0.001, 1)
+            norm = LogNorm(0.0001, 1, clip=True)
         else:
             norm = None
         h = ax.pcolormesh(Theta, R, hist, norm=norm)
@@ -298,13 +362,10 @@ def plot_histogram_wheel(
     bins: tuple = (360, 100),
     log_scale: bool = False,
 ):
-    x_wheel, y_wheel = get_2D_wheel_coordinate(theta, r)
-
-    x_bins = np.linspace(-1, 1, bins[0] + 1)
-    y_bins = np.linspace(-1, 1, bins[1] + 1)
+    x_wheel, y_wheel = get_2D_wheel_coordinate(theta / (2 * np.pi), r)
 
     hist, x_edges, y_edges = np.histogram2d(
-        x_wheel, y_wheel, bins=[x_bins, y_bins]
+        x_wheel, y_wheel, bins=bins, range=[[0, 1], [0, 1]]
     )
 
     # Get bin centers (instead of edges)
@@ -319,21 +380,25 @@ def plot_histogram_wheel(
     # density of hist
     hist_values = hist_values / np.sum(hist_values)
 
-    theta_bins = np.linspace(0, 2 * np.pi, bins[0] + 1)
-    r_bins = np.linspace(0, 1, bins[1] + 1)
+    theta_bins = np.linspace(0, 2 * np.pi, bins[0], endpoint=False)
+    r_bins = np.linspace(0, 1, bins[1], endpoint=False)
 
     T, R = np.meshgrid(theta_bins, r_bins)  # Polar mesh grid
 
     # Convert polar grid to Cartesian for interpolation
-    x_polar, y_polar = get_2D_wheel_coordinate(T.flatten(), R.flatten())
+    x_polar, y_polar = get_2D_wheel_coordinate(
+        T.flatten() / (2 * np.pi), R.flatten()
+    )
 
     C = griddata(
-        cartesian_points, hist_values, (x_polar, y_polar), method="nearest"
+        cartesian_points,
+        hist_values,
+        (x_polar, y_polar),
     )
     C = C.reshape(R.shape)  # Reshape back to grid shape
 
     if log_scale:
-        norm = LogNorm(0.001, 1)
+        norm = LogNorm(0.0001, 1, clip=True)
     else:
         norm = None
 
@@ -360,7 +425,7 @@ def resume_polar_plot(theta, r, title=None, bins=(360, 100)):
         axs[0],
         theta,
         r,
-        color_bg=True,
+        background=True,
         bins=bins,
         point_size=1,
         alpha=1,
@@ -453,6 +518,7 @@ def create_maxwell_triangle(
     heatmap: bool = False,
     labels: np.ndarray = None,
     cluster_colors: dict = None,
+    colorbar: bool = False,
 ) -> tuple:
     """
     Create a Maxwell triangle plot of the data to visualize
@@ -570,19 +636,21 @@ def create_maxwell_triangle(
         d = generate_heatmap_data(hist, scale)
         heat = tax.heatmap(d, colorbar=False)
 
-        # add the colorbar after to avoid modifing the figure heatmap size.
-        divider = make_axes_locatable(tax.get_axes())
-        cax = divider.append_axes("right", size="4%", pad=0.2)
-        _ = figure.colorbar(
-            heat,
-            cax=cax,
-            # shrink the colorbar
-            fraction=0.046,
-            pad=0.04,
-            orientation="vertical",
-            norm=colors.LogNorm(0.001, 1),
-            label="density",
-        )
+        if colorbar:
+
+            # add the colorbar after to avoid modifing the figure heatmap size.
+            divider = make_axes_locatable(tax.get_axes())
+            cax = divider.append_axes("right", size="4%", pad=0.2)
+            _ = figure.colorbar(
+                heat,
+                cax=cax,
+                # shrink the colorbar
+                fraction=0.046,
+                pad=0.04,
+                orientation="vertical",
+                norm=colors.LogNorm(0.0001, 1, clip=True),
+                label="density",
+            )
 
         # avoid the right margin
         # figure.subplots_adjust(right=0.8)
@@ -708,15 +776,17 @@ def cartesian_brainbow_plot(
     if histogram:
         grid_points, Y, X = meshgrid_polar_coordinates(bins[0], bins[1])
 
+        range_ = [[0, 2 * np.pi], [0, 1]]
         if not polar:
             Y = Y / np.max(Y)
             X = X / np.max(X)
+            range_ = [[0, 1], [0, 1]]
 
-        hist, _, _ = np.histogram2d(x, y, bins=bins)
+        hist, _, _ = np.histogram2d(x, y, bins=bins, range=range_)
         hist = hist / np.sum(hist)
 
         if log_scale:
-            norm = LogNorm(0.001, 1)
+            norm = LogNorm(0.0001, 1, clip=True)
         else:
             norm = None
         h = ax.pcolormesh(X, Y, hist, norm=norm)
@@ -1005,6 +1075,7 @@ def plot_all(rgb):
 
     theta = hsv[:, 0] * 2 * np.pi
     r = hsv[:, 1]
+    v = hsv[:, 2]
 
     _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
     maxwell_data = rgb / rgb.sum(axis=1)[:, None]
@@ -1019,7 +1090,7 @@ def plot_all(rgb):
         # point_color="black",
         scatter=True,
         point_size=2,
-        color_bg=False,
+        background=False,
     )
 
     axes[1][1].axis("off")
@@ -1029,7 +1100,7 @@ def plot_all(rgb):
         axes[1][1],
         theta,
         r,
-        color_bg=False,
+        background=False,
         scatter=False,
         wheel_histogram=True,
         log_scale=True,
@@ -1039,7 +1110,7 @@ def plot_all(rgb):
     hue_value_plot(
         axes[4][0],
         theta,
-        r,
+        v,
         #   point_color="white",
         point_size=2,
         alpha=1,
@@ -1048,7 +1119,7 @@ def plot_all(rgb):
     hue_value_plot(
         axes[4][1],
         theta,
-        r,
+        v,
         scatter=False,
         background=False,
         histogram=True,
@@ -1129,120 +1200,7 @@ def plot_all(rgb):
 def plot_all_flat(rgb):
 
     # Create a figure with two subplots
-    fig, axes = plt.subplots(2, 5, figsize=(20, 10), layout="constrained")
-    # Ensure both subplots have an equal aspect ratio
-
-    hsv = rgb_to_hsv(rgb)
-
-    theta = hsv[:, 0] * 2 * np.pi
-    r = hsv[:, 1]
-
-    _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
-    maxwell_data = rgb / rgb.sum(axis=1)[:, None]
-
-    axes[0][1].axis("off")
-
-    axes[0][1] = plt.subplot(2, 5, 2, projection="polar")
-    scatter_polar_plot(
-        axes[0][1],
-        theta,
-        r,
-        # point_color="black",
-        scatter=True,
-        point_size=1,
-        color_bg=False,
-    )
-
-    axes[1][1].axis("off")
-
-    axes[1][1] = plt.subplot(2, 5, 7, projection="polar")
-    scatter_polar_plot(
-        axes[1][1],
-        theta,
-        r,
-        color_bg=False,
-        scatter=False,
-        wheel_histogram=True,
-        log_scale=True,
-        bins=(50, 50),
-    )
-
-    hue_value_plot(
-        axes[0][4],
-        theta,
-        r,
-        #   point_color="white",
-        point_size=1,
-        alpha=1,
-        background=False,
-    )
-    hue_value_plot(
-        axes[1][4],
-        theta,
-        r,
-        scatter=False,
-        background=False,
-        histogram=True,
-        log_scale=True,
-        bins=(30, 30),
-    )
-
-    hue_saturation_plot(
-        axes[0][3],
-        theta,
-        r,
-        # point_color="black",
-        point_size=1,
-        alpha=1,
-        background=False,
-    )
-    hue_saturation_plot(
-        axes[1][3],
-        theta,
-        r,
-        scatter=False,
-        background=False,
-        histogram=True,
-        log_scale=True,
-        bins=(30, 30),
-    )
-
-    spherical_plot(
-        axes[0][2],
-        theta2 / 90,
-        phi / 90,
-        # point_color="black",
-        point_size=1,
-        alpha=1,
-        background=False,
-    )
-    spherical_plot(
-        axes[1][2],
-        theta2 / 90,
-        phi / 90,
-        scatter=False,
-        background=False,
-        histogram=True,
-        log_scale=True,
-        bins=(30, 30),
-    )
-
-    create_maxwell_triangle(
-        maxwell_data,
-        point_size=1,
-        ax=axes[0][0],
-        # point_color="black",
-        background=False,
-    )
-
-    create_maxwell_triangle(
-        maxwell_data,
-        point_size=1,
-        ax=axes[1][0],
-        # point_color="black",
-        heatmap=True,
-        scale=100,
-    )
+    fig, axes = plt.subplots(2, 6, figsize=(30, 10), layout="constrained")
 
     for i, ax in enumerate(axes.flatten()):
         ax.text(
@@ -1253,5 +1211,133 @@ def plot_all_flat(rgb):
             fontsize=20,
             va="top",
         )
+    # Ensure both subplots have an equal aspect ratio
+
+    hsv = rgb_to_hsv(rgb)
+
+    theta = hsv[:, 0] * 2 * np.pi
+    r = hsv[:, 1]
+    v = hsv[:, 2]
+
+    _, theta2, phi = rgb_to_spherical(rgb[:, 0], rgb[:, 1], rgb[:, 2])
+    maxwell_data = rgb / rgb.sum(axis=1)[:, None]
+
+    axes[0][0].set_axis_off()
+    axes[0, 0] = plt.subplot(2, 6, 1, projection="3d")
+    plot_rgb_cube(ax=axes[0, 0], rgb=rgb, histogram=False)
+
+    axes[1, 0].set_axis_off()
+    axes[1, 0] = plt.subplot(2, 6, 7, projection="3d")
+    plot_rgb_cube(
+        ax=axes[1, 0], rgb=rgb, histogram=True, colorbar=True, alpha=1
+    )
+
+    axes[0][2].axis("off")
+    axes[0][2] = plt.subplot(2, 6, 3, projection="polar")
+    scatter_polar_plot(
+        axes[0][2],
+        theta,
+        r,
+        # point_color="black",
+        scatter=True,
+        point_size=1,
+        background=False,
+    )
+
+    axes[1][2].axis("off")
+
+    axes[1][2] = plt.subplot(2, 6, 9, projection="polar")
+    scatter_polar_plot(
+        axes[1][2],
+        theta,
+        r,
+        background=False,
+        scatter=False,
+        wheel_histogram=True,
+        log_scale=True,
+        bins=(50, 50),
+    )
+
+    hue_value_plot(
+        axes[0][5],
+        theta,
+        v,
+        #   point_color="white",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    hue_value_plot(
+        axes[1][5],
+        theta,
+        v,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    hue_saturation_plot(
+        axes[0][4],
+        theta,
+        r,
+        # point_color="black",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    hue_saturation_plot(
+        axes[1][4],
+        theta,
+        r,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    spherical_plot(
+        axes[0][3],
+        theta2 / 90,
+        phi / 90,
+        # point_color="black",
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    spherical_plot(
+        axes[1][3],
+        theta2 / 90,
+        phi / 90,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    axes[0][1].axis("off")
+    axes[0][1] = plt.subplot(2, 6, 2)
+    create_maxwell_triangle(
+        maxwell_data,
+        point_size=1,
+        ax=axes[0][1],
+        # point_color="black",
+        background=False,
+    )
+
+    axes[1][1].axis("off")
+    axes[1][1] = plt.subplot(2, 6, 8)
+    create_maxwell_triangle(
+        maxwell_data,
+        point_size=1,
+        ax=axes[1][1],
+        # point_color="black",
+        heatmap=True,
+        scale=100,
+        colorbar=False,
+    )
 
     return fig, axes
