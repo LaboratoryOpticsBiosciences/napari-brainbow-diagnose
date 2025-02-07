@@ -158,6 +158,10 @@ def plot_rgb_cube(
     ax.xaxis.labelpad = 0
     ax.yaxis.labelpad = 0
     ax.zaxis.labelpad = 0
+    
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_zlim(0, 1)
 
     return ax
 
