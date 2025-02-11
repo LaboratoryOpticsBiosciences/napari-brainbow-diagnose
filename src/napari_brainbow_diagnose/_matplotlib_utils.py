@@ -120,7 +120,6 @@ def plot_rgb_cube(
         x, y, z = np.meshgrid(x, y, z, indexing="ij")
 
         color = hist.reshape(-1)
-        print(color != 0)
         scatter = ax.scatter(
             x.reshape(-1)[color != 0],
             y.reshape(-1)[color != 0],
@@ -159,7 +158,7 @@ def plot_rgb_cube(
     ax.xaxis.labelpad = 0
     ax.yaxis.labelpad = 0
     ax.zaxis.labelpad = 0
-    
+
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_zlim(0, 1)
