@@ -120,14 +120,15 @@ def plot_rgb_cube(
         x, y, z = np.meshgrid(x, y, z, indexing="ij")
 
         color = hist.reshape(-1)
+        print(color != 0)
         scatter = ax.scatter(
-            x,
-            y,
-            z,
+            x.reshape(-1)[color != 0],
+            y.reshape(-1)[color != 0],
+            z.reshape(-1)[color != 0],
             s=point_size,
-            c=color,
+            c=color[color != 0],
             cmap=cmap,
-            norm=matplotlib.colors.LogNorm(0.0001, 1, clip=True),
+            norm=matplotlib.colors.LogNorm(0.0001, 1, clip=False),
             alpha=alpha,
         )
 
