@@ -113,6 +113,18 @@ def compute_all_channel_space(
     point_layer.features["spherical_theta"] = theta
     point_layer.features["spherical_phi"] = phi
 
+    if "SELECTED_CLUSTER" not in point_layer.features :
+        point_layer.features["SELECTED_CLUSTER"] = 0
+
+    def update_manual_selection_cluster(selected):
+        # reset selected cluster in features
+        point_layer.features["SELECTED_CLUSTER"] = 0
+        point_layer.features.loc[selected, "SELECTED_CLUSTER"] = 1
+
+    point_layer.selected_data.events.items_changed.connect(
+        update_manual_selection_cluster
+    )
+
 
 class DiagnoseWidget(QWidget):
     def __init__(self, napari_viewer) -> None:
