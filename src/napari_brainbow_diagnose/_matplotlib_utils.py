@@ -49,7 +49,7 @@ def background_hue_saturation_plot(
     RGB = np.dstack((RGB, alpha))
 
     # Plot the color wheel using pcolormesh in polar projection
-    ax.pcolormesh(Theta, R, RGB)
+    ax.pcolormesh(Theta, R, RGB, rasterized=True)
 
     return ax
 
@@ -71,7 +71,7 @@ def background_hue_value_plot(ax, bins, alpha=1):
     RGB = np.dstack((RGB, alpha))
 
     # Plot the color wheel using pcolormesh in polar projection
-    ax.pcolormesh(X, Y, RGB)
+    ax.pcolormesh(X, Y, RGB, rasterized=True)
 
     return ax
 
@@ -94,7 +94,7 @@ def background_spherical_plot(ax, bins=(90, 90), alpha=1):
     X = np.swapaxes(X, 0, 1)
     Y = np.swapaxes(Y, 0, 1)
 
-    ax.pcolormesh(X, Y, RGB)
+    ax.pcolormesh(X, Y, RGB, rasterized=True)
 
     return ax
 
@@ -102,12 +102,14 @@ def background_spherical_plot(ax, bins=(90, 90), alpha=1):
 def plot_rgb_cube(
     ax: Axes3D,
     rgb: np.ndarray,
+    color=None,
     histogram: bool = False,
     bins: int = (30, 30, 30),
     cmap: str = "viridis",
     alpha: float = 1,
     colorbar: bool = False,
     point_size: int = 1,
+    rasterized: bool = True,
 ):
     if histogram:
         hist, _ = np.histogramdd(
@@ -142,7 +144,11 @@ def plot_rgb_cube(
                 label="density",
             )
     else:
-        ax.scatter(*rgb.T, c=rgb, s=point_size, alpha=1)
+        if color is None:
+            color = rgb
+        ax.scatter(
+            *rgb.T, c=color, s=point_size, alpha=1, rasterized=rasterized
+        )
     ax.set_xlabel("R")
     ax.set_ylabel("G")
     ax.set_zlabel("B")
@@ -183,6 +189,7 @@ def scatter_polar_plot(
     point_size=5,
     alpha=1,
     show_colorbar=False,
+    rasterized=True,
 ):
     """
     Plot a scatter plot in polar coordinatesor its histogram,
@@ -231,6 +238,8 @@ def scatter_polar_plot(
         Transparency of all the plots, by default 1
     show_colorbar : bool, optional
         If True, the colorbar is displayed, by default True
+    rasterized : bool, optional
+        If True, the plot is rasterized for faster loading, by default True
 
     Returns
     -------
@@ -255,7 +264,7 @@ def scatter_polar_plot(
             norm = LogNorm(0.0001, 1, clip=True)
         else:
             norm = None
-        h = ax.pcolormesh(Theta, R, hist, norm=norm)
+        h = ax.pcolormesh(Theta, R, hist, norm=norm, rasterized=rasterized)
 
     if wheel_histogram:
 
@@ -310,11 +319,18 @@ def scatter_polar_plot(
         label = "density"
         if kernel_density:
             h = ax.pcolormesh(
-                Theta, R, density
+                Theta, R, density, rasterized=rasterized
             )  # , norm=LogNorm(0.1, max_density))
 
         if contour:
-            h = ax.contourf(Theta, R, density, levels=10, cmap="viridis")
+            h = ax.contourf(
+                Theta,
+                R,
+                density,
+                levels=10,
+                cmap="viridis",
+                rasterized=rasterized,
+            )
 
         plt.colorbar(
             h,
@@ -329,9 +345,23 @@ def scatter_polar_plot(
             color[:, 1] = r
             color[:, 2] = 1
             rgb = hsv_to_rgb(color)
-            ax.scatter(theta, r, c=rgb, s=point_size, alpha=alpha)
+            ax.scatter(
+                theta,
+                r,
+                c=rgb,
+                s=point_size,
+                alpha=alpha,
+                rasterized=rasterized,
+            )
         else:
-            ax.scatter(theta, r, c=point_color, s=point_size, alpha=alpha)
+            ax.scatter(
+                theta,
+                r,
+                c=point_color,
+                s=point_size,
+                alpha=alpha,
+                rasterized=rasterized,
+            )
 
     # pretty axes
     ax.set_xlabel("Hue")
@@ -365,6 +395,7 @@ def plot_histogram_wheel(
     r: np.ndarray,
     bins: tuple = (360, 100),
     log_scale: bool = False,
+    rasterized: bool = True,
 ):
     x_wheel, y_wheel = get_2D_wheel_coordinate(theta / (2 * np.pi), r)
 
@@ -406,7 +437,7 @@ def plot_histogram_wheel(
     else:
         norm = None
 
-    h = ax.pcolormesh(T, R, C, norm=norm)
+    h = ax.pcolormesh(T, R, C, norm=norm, rasterized=rasterized)
 
     return ax, h
 
@@ -523,6 +554,7 @@ def create_maxwell_triangle(
     labels: np.ndarray = None,
     cluster_colors: dict = None,
     colorbar: bool = False,
+    rasterized: bool = True,
 ) -> tuple:
     """
     Create a Maxwell triangle plot of the data to visualize
@@ -670,6 +702,7 @@ def create_maxwell_triangle(
                     color=label,
                     s=point_size,
                     alpha=point_alpha,
+                    rasterized=rasterized,
                 )
     else:
         if background:
@@ -678,6 +711,7 @@ def create_maxwell_triangle(
                 map_,
                 use_rgba=True,
                 colorbar=False,
+                # rasterized=rasterized,
             )
         if point_color is not None:
             tax.scatter(
@@ -685,6 +719,7 @@ def create_maxwell_triangle(
                 color=point_color,
                 s=point_size,
                 alpha=point_alpha,
+                rasterized=rasterized,
             )
         else:
 
@@ -697,7 +732,11 @@ def create_maxwell_triangle(
             rgb = hsv_to_rgb(hsv)
 
             tax.scatter(
-                data * scale, color=rgb, s=point_size, alpha=point_alpha
+                data * scale,
+                color=rgb,
+                s=point_size,
+                alpha=point_alpha,
+                rasterized=rasterized,
             )
         tax.set_background_color(set_background_color)
 
@@ -767,6 +806,7 @@ def cartesian_brainbow_plot(
     point_size=5,
     alpha=0.5,
     polar=True,
+    rasterized=True,
 ):
     """
     Plot a scatter plot in cartesian coordinates or its histogram,
@@ -856,9 +896,23 @@ def cartesian_brainbow_plot(
         )
     if scatter:
         if point_color is None:
-            ax.scatter(x, y, c="black", s=point_size, alpha=alpha)
+            ax.scatter(
+                x,
+                y,
+                c="black",
+                s=point_size,
+                alpha=alpha,
+                rasterized=rasterized,
+            )
         else:
-            ax.scatter(x, y, c=point_color, s=point_size, alpha=alpha)
+            ax.scatter(
+                x,
+                y,
+                c=point_color,
+                s=point_size,
+                alpha=alpha,
+                rasterized=rasterized,
+            )
 
     return ax
 
@@ -1203,8 +1257,7 @@ def plot_all(rgb):
 
 def plot_all_flat(rgb):
 
-    # Create a figure with two subplots
-    fig, axes = plt.subplots(2, 6, figsize=(30, 10), layout="constrained")
+    fig, axes = plt.subplots(2, 7, figsize=(35, 10), layout="constrained")
 
     for i, ax in enumerate(axes.flatten()):
         ax.text(
@@ -1227,22 +1280,22 @@ def plot_all_flat(rgb):
     maxwell_data = rgb / rgb.sum(axis=1)[:, None]
 
     axes[0][0].set_axis_off()
-    axes[0, 0] = plt.subplot(2, 6, 1, projection="3d")
+    axes[0, 0] = plt.subplot(2, 7, 1, projection="3d")
     plot_rgb_cube(ax=axes[0, 0], rgb=rgb, histogram=False)
 
     axes[1, 0].set_axis_off()
-    axes[1, 0] = plt.subplot(2, 6, 7, projection="3d")
+    axes[1, 0] = plt.subplot(2, 7, 8, projection="3d")
     plot_rgb_cube(
         ax=axes[1, 0], rgb=rgb, histogram=True, colorbar=True, alpha=1
     )
 
     axes[0][2].axis("off")
-    axes[0][2] = plt.subplot(2, 6, 3, projection="polar")
+    axes[0][2] = plt.subplot(2, 7, 3, projection="polar")
     scatter_polar_plot(
         axes[0][2],
         theta,
         r,
-        # point_color="black",
+        point_color=rgb,
         scatter=True,
         point_size=1,
         background=False,
@@ -1250,7 +1303,7 @@ def plot_all_flat(rgb):
 
     axes[1][2].axis("off")
 
-    axes[1][2] = plt.subplot(2, 6, 9, projection="polar")
+    axes[1][2] = plt.subplot(2, 7, 10, projection="polar")
     scatter_polar_plot(
         axes[1][2],
         theta,
@@ -1262,38 +1315,64 @@ def plot_all_flat(rgb):
         bins=(50, 50),
     )
 
+    axes[0][3].axis("off")
+    axes[0][3] = plt.subplot(2, 7, 4, projection="polar")
+    scatter_polar_plot(
+        axes[0][3],
+        theta,
+        v,
+        point_color=rgb,
+        scatter=True,
+        point_size=1,
+        background=False,
+    )
+
+    axes[1][3].axis("off")
+
+    axes[1][3] = plt.subplot(2, 7, 11, projection="polar")
+    scatter_polar_plot(
+        axes[1][3],
+        theta,
+        v,
+        background=False,
+        scatter=False,
+        wheel_histogram=True,
+        log_scale=True,
+        bins=(50, 50),
+    )
+
     hue_value_plot(
+        axes[0][6],
+        theta,
+        v,
+        point_color=rgb,
+        point_size=1,
+        alpha=1,
+        background=False,
+    )
+    hue_value_plot(
+        axes[1][6],
+        theta,
+        v,
+        scatter=False,
+        background=False,
+        histogram=True,
+        log_scale=True,
+        bins=(30, 30),
+    )
+
+    hue_saturation_plot(
         axes[0][5],
         theta,
-        v,
-        #   point_color="white",
+        r,
+        point_color=rgb,
         point_size=1,
         alpha=1,
         background=False,
     )
-    hue_value_plot(
+    hue_saturation_plot(
         axes[1][5],
         theta,
-        v,
-        scatter=False,
-        background=False,
-        histogram=True,
-        log_scale=True,
-        bins=(30, 30),
-    )
-
-    hue_saturation_plot(
-        axes[0][4],
-        theta,
-        r,
-        # point_color="black",
-        point_size=1,
-        alpha=1,
-        background=False,
-    )
-    hue_saturation_plot(
-        axes[1][4],
-        theta,
         r,
         scatter=False,
         background=False,
@@ -1303,16 +1382,16 @@ def plot_all_flat(rgb):
     )
 
     spherical_plot(
-        axes[0][3],
+        axes[0][4],
         theta2 / 90,
         phi / 90,
-        # point_color="black",
+        point_color=rgb,
         point_size=1,
         alpha=1,
         background=False,
     )
     spherical_plot(
-        axes[1][3],
+        axes[1][4],
         theta2 / 90,
         phi / 90,
         scatter=False,
@@ -1323,17 +1402,17 @@ def plot_all_flat(rgb):
     )
 
     axes[0][1].axis("off")
-    axes[0][1] = plt.subplot(2, 6, 2)
+    axes[0][1] = plt.subplot(2, 7, 2)
     create_maxwell_triangle(
         maxwell_data,
         point_size=1,
         ax=axes[0][1],
-        # point_color="black",
+        point_color=rgb,
         background=False,
     )
 
     axes[1][1].axis("off")
-    axes[1][1] = plt.subplot(2, 6, 8)
+    axes[1][1] = plt.subplot(2, 7, 9)
     create_maxwell_triangle(
         maxwell_data,
         point_size=1,
