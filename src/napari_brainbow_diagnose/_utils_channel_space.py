@@ -66,7 +66,7 @@ def rgb_to_maxwell_triangle(r, g, b):
 
 
 def rgb_to_spherical(r, g, b):
-    radius = np.linalg.norm([r, g, b])
+    radius = np.linalg.norm([r, g, b], axis=0)
     theta = np.arctan2(sqrt(r**2 + g**2), b)
     phi = np.arctan2(g, r)
 
