@@ -83,15 +83,31 @@ def create_rgb_features_widget(
 
 def compute_all_channel_space(
     point_layer: "napari.layers.Points",
+    rgb: np.ndarray = None,
 ) -> None:
+    """ Compute all the channel space features from the RGB values.
 
-    # check that point_layer features has the RGB columns
-    if not all([c in point_layer.features.columns for c in ["R", "G", "B"]]):
-        raise ValueError(
-            "The point layer should have the columns 'R', 'G', 'B'."
-        )
+    Parameters
+    ----------
+    point_layer : napari.layers.Points
+        The point layer where the RGB values are stored. The features
+        will be added to this layer.
+    rgb : np.ndarray, optional
+        The RGB values of the points. If None, the RGB values will be
+        extracted from the point layer using the columns 'R', 'G', 'B'.
+    """
+    
+    if rgb is None:
 
-    rgb = point_layer.features[["R", "G", "B"]].values
+        # check that point_layer features has the RGB columns
+        if not all([c in point_layer.features.columns for c in ["R", "G", "B"]]):
+            raise ValueError(
+                "The point layer should have the columns 'R', 'G', 'B'."
+            )
+
+        rgb = point_layer.features[["R", "G", "B"]].values
+
+
     hsv = rgb_to_hsv(rgb)
 
     wheel_pos = get_2D_wheel_coordinate(hsv[:, 0], hsv[:, 1])
